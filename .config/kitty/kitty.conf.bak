@@ -1,0 +1,15 @@
+# BEGIN_KITTY_THEME
+# Gruvbox Dark Soft
+include current-theme.conf
+# END_KITTY_THEME
+
+# Padding
+window_padding_width 25
+
+# Font
+font_family      CaskaydiaCove NF
+bold_font        CaskaydiaCove NF SemiBold
+italic_font      CaskaydiaCove NF Italic
+
+# Background purple
+# background       #3F163b
