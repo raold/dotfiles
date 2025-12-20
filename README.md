@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal dotfiles for Arch Linux with i3wm.
+Personal dotfiles for Arch Linux with i3wm + Gruvbox theme.
 
 ## Contents
 
@@ -15,11 +15,20 @@ Personal dotfiles for Arch Linux with i3wm.
 - `.config/rofi/` - Rofi application launcher
 - `.config/dunst/` - Dunst notification daemon
 - `.config/picom/` - Picom compositor
+- `.config/flashfocus/` - Window flash effects
+
+### Theming
+- `.gtkrc-2.0` - GTK2 theme (Gruvbox-Dark-B-LB)
+- `.config/gtk-3.0/` - GTK3 theme settings
+- `.config/wal/` - Pywal colorschemes
+- `.config/fontconfig/` - Font configuration
+- `.fehbg` - Wallpaper setter (feh)
 
 ### Terminal & Editors
 - `.config/kitty/` - Kitty terminal
 - `.nanorc` - Nano editor configuration
 - `.tmux.conf` - Tmux terminal multiplexer
+- `.config/mpv/` - MPV media player
 
 ### CLI Tools
 - `.config/btop/` - Btop system monitor
@@ -34,8 +43,12 @@ Personal dotfiles for Arch Linux with i3wm.
 ### System
 - `.gitconfig` - Git configuration
 - `.xinitrc` - X11 init script
+- `.xprofile` - X11 profile
 - `refind/` - rEFInd bootloader configuration
 - `.config/psd/` - Profile-sync-daemon
+
+### Not Included (separate repos)
+- `nvim` - Using [NvChad](https://github.com/NvChad/NvChad)
 
 ## Installation
 
@@ -71,5 +84,11 @@ To push repo dotfiles to your system:
 - dunst
 - picom
 - kitty
+- feh
+- flashfocus
 - btop, bat, atuin, starship, neofetch
+- pywal
 - rEFInd (bootloader)
+- GTK Theme: Gruvbox-Dark-B-LB
+- Icon Theme: Gruvbox-Plus-Dark
+- Cursor: Future-cursors

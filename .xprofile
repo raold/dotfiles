@@ -1,0 +1,2 @@
+# GTK smooth scrolling
+export GDK_CORE_DEVICE_EVENTS=1

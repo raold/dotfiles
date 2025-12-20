@@ -1,0 +1,2 @@
+#!/bin/sh
+feh --no-fehbg --bg-fill '/home/dro/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png' 

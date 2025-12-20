@@ -26,6 +26,9 @@ HOME_FILES=(
     ".tmux.conf"
     ".nanorc"
     ".xinitrc"
+    ".gtkrc-2.0"
+    ".xprofile"
+    ".fehbg"
 )
 
 # .config directories to sync
@@ -43,13 +46,17 @@ CONFIG_DIRS=(
     "neofetch"
     "lazygit"
     "psd"
+    "gtk-3.0"
+    "flashfocus"
+    "mpv"
+    "wal"
+    "fontconfig"
 )
 
 # .config files to sync
 CONFIG_FILES=(
     "starship.toml"
     "greenclip.toml"
-    "picom.conf"
     "fastfetch"
 )
 
