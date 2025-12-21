@@ -51,13 +51,13 @@ CONFIG_DIRS=(
     "mpv"
     "wal"
     "fontconfig"
+    "fastfetch"
 )
 
 # .config files to sync
 CONFIG_FILES=(
     "starship.toml"
     "greenclip.toml"
-    "fastfetch"
 )
 
 collect_dotfiles() {

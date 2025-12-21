@@ -46,6 +46,9 @@ exec --no-startup-id xrandr --output eDP-1 --mode "2256x1504" --scale 0.84x0.84
 # Color profile
 exec --no-startup-id xcalib /home/dro/Downloads/framework.icm
 
+# Volume adjustments
+
+
 # Brightness adjustments
 bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
 bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-

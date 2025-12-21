@@ -30,6 +30,8 @@ alias ls="eza -al"
 alias lst3="eza -T --level=3"
 alias powerst="upower -i /org/freedesktop/UPower/devices/battery_BAT1"
 alias wttr="bash ~/rice/bash-script-wttr/wttr lynchburg"
+alias dotfiles="cd ~/rice/dotfiles-repo && git status"
+alias nfl="cd ~/rice/nfl-analytics && git status"
 
 # PATH configuration (consolidated)
 export PATH="$HOME/.local/bin:$PATH"
@@ -66,7 +68,6 @@ export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 export FZF_DEFAULT_OPTS='--color=bg+:#3c3836,bg:#282828,spinner:#fb4934,hl:#928374,fg:#ebdbb2,header:#928374,info:#8ec07c,pointer:#fb4934,marker:#fb4934,fg+:#ebdbb2,prompt:#fb4934,hl+:#fb4934'
-alias dotfiles="cd ~/rice/dotfiles-repo && git status"
 
 # Show system info on terminal start
 fastfetch
