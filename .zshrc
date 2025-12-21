@@ -70,3 +70,6 @@ alias dotfiles="/usr/bin/git --git-dir=\$HOME/.dotfiles/ --work-tree=\$HOME"
 
 # Show system info on terminal start
 fastfetch
+
+# Centered bold tty-clock with Gruvbox yellow
+alias clock='tty-clock -c -b -C 3'

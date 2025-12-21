@@ -1,9 +1,9 @@
-/* colors */
+/* colors - Gruvbox Light */
 
 * {
   al:    #00000000;
-  bg:    #263238FF;
-  ac:    #00BCD4FF;
-  se:    #00BCD426;
-  fg:    #DFDFDFFF;
+  bg:    #fbf1c7FF;
+  ac:    #d65d0eFF;
+  se:    #d6500e30;
+  fg:    #3c3836FF;
 }
