@@ -32,7 +32,7 @@ exec --no-startup-id dex --autostart --environment i3
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+exec --no-startup-id nm-applet --indicator
 
 #### Begin ricko mods ####
 
@@ -101,7 +101,7 @@ mode "$mode_gaps_outer" {
 }
 
 # Background
-exec --no-startup-id feh --bg-fill ~/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png
+exec --no-startup-id sleep 2 && feh --bg-fill ~/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png
 
 # Picom transparencey
 exec --no-startup-id picom -b
