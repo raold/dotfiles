@@ -1,0 +1,64 @@
+#!/bin/bash
+# Captive Portal Auto-Open Script
+# Opens browser when NetworkManager detects captive portal
+# Backup: /etc/NetworkManager/dispatcher.d/90-captive-portal.backup-20260101-105301
+
+LOG="/tmp/captive-portal.log"
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOG"; }
+
+interface="$1"
+status="$2"
+
+# Only act on connectivity-change events
+if [ "$status" != "connectivity-change" ]; then
+    exit 0
+fi
+
+log "Connectivity change detected on $interface"
+
+# Check if we're in portal state
+connectivity=$(nmcli -t -f STATE general 2>/dev/null | head -1)
+log "Connectivity state: $connectivity"
+
+if [ "$connectivity" = "portal" ]; then
+    log "Portal detected, finding active session..."
+    
+    # Method 1: Use loginctl to find active graphical session (systemd-based, most reliable)
+    ACTIVE_SESSION=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$3 != "" {print $1; exit}')
+    
+    if [ -n "$ACTIVE_SESSION" ]; then
+        DISPLAY_USER=$(loginctl show-session "$ACTIVE_SESSION" -p Name --value 2>/dev/null)
+        DISPLAY_VAL=$(loginctl show-session "$ACTIVE_SESSION" -p Display --value 2>/dev/null)
+        SESSION_TYPE=$(loginctl show-session "$ACTIVE_SESSION" -p Type --value 2>/dev/null)
+        log "Found session: $ACTIVE_SESSION, user: $DISPLAY_USER, display: $DISPLAY_VAL, type: $SESSION_TYPE"
+    fi
+    
+    # Method 2: Fallback to who command if loginctl fails
+    if [ -z "$DISPLAY_USER" ]; then
+        DISPLAY_USER=$(who 2>/dev/null | grep -m1 'tty\|pts' | awk '{print $1}')
+        DISPLAY_VAL=":0"
+        log "Fallback to who: user=$DISPLAY_USER, display=$DISPLAY_VAL"
+    fi
+    
+    if [ -n "$DISPLAY_USER" ] && [ -n "$DISPLAY_VAL" ]; then
+        # Use neverssl.com - guaranteed HTTP, triggers captive portal redirect
+        PORTAL_URL="http://neverssl.com"
+        log "Opening $PORTAL_URL for user $DISPLAY_USER on display $DISPLAY_VAL"
+        
+        # Set up environment for GUI app
+        export DISPLAY="$DISPLAY_VAL"
+        export XAUTHORITY="/home/$DISPLAY_USER/.Xauthority"
+        
+        # Try xdg-open first (respects default browser)
+        if sudo -u "$DISPLAY_USER" DISPLAY="$DISPLAY_VAL" XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" xdg-open "$PORTAL_URL" 2>>"$LOG"; then
+            log "Browser opened successfully"
+        else
+            log "xdg-open failed, trying firefox directly"
+            sudo -u "$DISPLAY_USER" DISPLAY="$DISPLAY_VAL" XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" firefox "$PORTAL_URL" 2>>"$LOG" &
+        fi
+    else
+        log "ERROR: Could not determine user or display"
+    fi
+else
+    log "Not in portal state, no action needed"
+fi

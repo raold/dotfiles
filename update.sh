@@ -29,6 +29,7 @@ HOME_FILES=(
     ".gtkrc-2.0"
     ".xprofile"
     ".fehbg"
+    "CLAUDE.md"
 )
 
 # .config directories to sync
@@ -58,6 +59,25 @@ CONFIG_DIRS=(
 CONFIG_FILES=(
     "starship.toml"
     "greenclip.toml"
+)
+
+# Claude Code settings (NOT credentials or history)
+CLAUDE_FILES=(
+    "settings.json"
+    "settings.local.json"
+)
+
+# Boot configuration files (requires sudo)
+BOOT_FILES=(
+    "refind_linux.conf"
+)
+
+# System configuration files (requires sudo)
+SYSTEM_CONFIGS=(
+    "/etc/NetworkManager/dispatcher.d/90-captive-portal"
+    "/etc/modprobe.d/amd-pmc.conf"
+    "/etc/modprobe.d/amdgpu.conf"
+    "/etc/systemd/sleep.conf.d/framework-amd.conf"
 )
 
 collect_dotfiles() {
@@ -95,6 +115,17 @@ collect_dotfiles() {
         fi
     done
 
+    # Copy Claude Code settings (not credentials/history)
+    mkdir -p "$DOTFILES_DIR/.claude"
+    for file in "${CLAUDE_FILES[@]}"; do
+        if [[ -f "$HOME/.claude/$file" ]]; then
+            cp "$HOME/.claude/$file" "$DOTFILES_DIR/.claude/$file"
+            echo -e "${GREEN}  Collected: .claude/$file${NC}"
+        else
+            echo -e "${RED}  Not found: .claude/$file${NC}"
+        fi
+    done
+
     # Copy rEFInd config (requires sudo)
     if [[ -f "/boot/EFI/refind/refind.conf" ]]; then
         mkdir -p "$DOTFILES_DIR/refind"
@@ -102,6 +133,44 @@ collect_dotfiles() {
         sudo chown "$USER:$USER" "$DOTFILES_DIR/refind/refind.conf"
         echo -e "${GREEN}  Collected: refind/refind.conf${NC}"
     fi
+
+    # Copy boot files (requires sudo)
+    for file in "${BOOT_FILES[@]}"; do
+        if [[ -f "/boot/$file" ]]; then
+            sudo cp "/boot/$file" "$DOTFILES_DIR/refind/$file"
+            sudo chown "$USER:$USER" "$DOTFILES_DIR/refind/$file"
+            echo -e "${GREEN}  Collected: refind/$file${NC}"
+        else
+            echo -e "${RED}  Not found: /boot/$file${NC}"
+        fi
+    done
+
+    # Copy system configs (requires sudo)
+    mkdir -p "$DOTFILES_DIR/system-configs/NetworkManager"
+    mkdir -p "$DOTFILES_DIR/system-configs/modprobe.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/systemd-sleep"
+    for filepath in "${SYSTEM_CONFIGS[@]}"; do
+        if [[ -f "$filepath" ]]; then
+            filename=$(basename "$filepath")
+            case "$filepath" in
+                */NetworkManager/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/NetworkManager/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/NetworkManager/$filename"
+                    ;;
+                */modprobe.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/modprobe.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/modprobe.d/$filename"
+                    ;;
+                */sleep.conf.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
+                    ;;
+            esac
+            echo -e "${GREEN}  Collected: system-configs/.../$filename${NC}"
+        else
+            echo -e "${RED}  Not found: $filepath${NC}"
+        fi
+    done
 
     echo -e "${GREEN}Done! Review changes with 'git diff'${NC}"
 }
@@ -152,8 +221,60 @@ install_dotfiles() {
         fi
     done
 
+    # Install Claude Code settings
+    if [[ -d "$DOTFILES_DIR/.claude" ]]; then
+        mkdir -p "$HOME/.claude"
+        for file in "${CLAUDE_FILES[@]}"; do
+            if [[ -f "$DOTFILES_DIR/.claude/$file" ]]; then
+                if [[ -f "$HOME/.claude/$file" ]]; then
+                    cp "$HOME/.claude/$file" "$BACKUP_DIR/"
+                fi
+                cp "$DOTFILES_DIR/.claude/$file" "$HOME/.claude/$file"
+                echo -e "${GREEN}  Installed: .claude/$file${NC}"
+            fi
+        done
+    fi
+
     echo -e "${GREEN}Done! Backups saved to: $BACKUP_DIR${NC}"
     echo -e "${YELLOW}You may need to restart your shell or WM to see changes.${NC}"
+}
+
+install_system() {
+    echo -e "${YELLOW}Installing system configs (requires sudo)...${NC}"
+
+    # Install boot files
+    for file in "${BOOT_FILES[@]}"; do
+        if [[ -f "$DOTFILES_DIR/refind/$file" ]]; then
+            sudo cp "/boot/$file" "/boot/$file.bak" 2>/dev/null
+            sudo cp "$DOTFILES_DIR/refind/$file" "/boot/$file"
+            echo -e "${GREEN}  Installed: /boot/$file${NC}"
+        fi
+    done
+
+    # Install system configs
+    for filepath in "${SYSTEM_CONFIGS[@]}"; do
+        filename=$(basename "$filepath")
+        case "$filepath" in
+            */NetworkManager/*)
+                src="$DOTFILES_DIR/system-configs/NetworkManager/$filename"
+                ;;
+            */modprobe.d/*)
+                src="$DOTFILES_DIR/system-configs/modprobe.d/$filename"
+                ;;
+            */sleep.conf.d/*)
+                src="$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
+                ;;
+        esac
+        if [[ -f "$src" ]]; then
+            sudo cp "$filepath" "$filepath.bak" 2>/dev/null
+            sudo mkdir -p "$(dirname "$filepath")"
+            sudo cp "$src" "$filepath"
+            sudo chmod +x "$filepath" 2>/dev/null  # For scripts
+            echo -e "${GREEN}  Installed: $filepath${NC}"
+        fi
+    done
+
+    echo -e "${GREEN}Done! Some changes may require reboot.${NC}"
 }
 
 install_refind() {
@@ -174,13 +295,22 @@ show_help() {
     echo ""
     echo "Options:"
     echo "  --collect       Collect dotfiles from system into repo"
-    echo "  --install       Install dotfiles from repo to system"
-    echo "  --refind        Install rEFInd config (requires sudo)"
+    echo "  --install       Install dotfiles from repo to system (user configs)"
+    echo "  --system        Install system configs (boot, modprobe, etc. - requires sudo)"
+    echo "  --refind        Install rEFInd config only (requires sudo)"
     echo "  --help          Show this help message"
     echo ""
     echo "Examples:"
     echo "  $0 --collect    # After making changes, sync to repo"
     echo "  $0 --install    # Fresh install or restore from repo"
+    echo "  $0 --system     # Install system-level configs (Framework 13 AMD)"
+    echo ""
+    echo "Collected files include:"
+    echo "  - Home dotfiles (.zshrc, .gitconfig, CLAUDE.md, etc.)"
+    echo "  - .config directories (i3, polybar, kitty, etc.)"
+    echo "  - Claude Code settings (.claude/settings.json)"
+    echo "  - Boot configs (refind_linux.conf, refind.conf)"
+    echo "  - System configs (captive-portal, modprobe, sleep)"
 }
 
 case "$1" in
@@ -189,6 +319,9 @@ case "$1" in
         ;;
     --install)
         install_dotfiles
+        ;;
+    --system)
+        install_system
         ;;
     --refind)
         install_refind
