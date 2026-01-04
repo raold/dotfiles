@@ -43,8 +43,11 @@ bindsym Print exec flameshot gui
 exec --no-startup-id xrandr --output eDP-1 --mode "2256x1504" --scale 0.84x0.84
 #--scale 0.9x0.9
 
-# Color profile
-exec --no-startup-id xcalib /home/dro/Downloads/framework.icm
+# Color correction (warmer gamma for Framework 13 BOE panel)
+exec --no-startup-id xrandr --output eDP-1 --gamma 1.0:0.95:0.9
+
+# Color profile (ICC)
+exec --no-startup-id xcalib ~/.local/share/icc/framework.icm
 
 # Volume adjustments
 
