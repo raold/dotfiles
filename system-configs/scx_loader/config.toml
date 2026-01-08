@@ -1,0 +1,4 @@
+# scx_loader configuration
+# Use scx_lavd for desktop/gaming (low latency, designed for Steam Deck)
+default_sched = "scx_lavd"
+default_mode = "Auto"

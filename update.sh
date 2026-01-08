@@ -57,6 +57,7 @@ CONFIG_DIRS=(
     "sway"
     "hypr"
     "waybar"
+    "easyeffects"
 )
 
 # .config files to sync
@@ -84,6 +85,8 @@ SYSTEM_CONFIGS=(
     "/etc/systemd/sleep.conf.d/framework-amd.conf"
     "/etc/systemd/logind.conf.d/lid-suspend-hibernate.conf"
     "/etc/mkinitcpio.conf"
+    "/etc/udev/rules.d/60-ioschedulers.rules"
+    "/etc/scx_loader/config.toml"
 )
 
 collect_dotfiles() {
@@ -156,6 +159,8 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/modprobe.d"
     mkdir -p "$DOTFILES_DIR/system-configs/systemd-sleep"
     mkdir -p "$DOTFILES_DIR/system-configs/logind.conf.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/udev.rules.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/scx_loader"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -179,6 +184,14 @@ collect_dotfiles() {
                 */mkinitcpio.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
+                    ;;
+                */udev/rules.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/udev.rules.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/udev.rules.d/$filename"
+                    ;;
+                */scx_loader/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/scx_loader/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/scx_loader/$filename"
                     ;;
             esac
             echo -e "${GREEN}  Collected: system-configs/.../$filename${NC}"
@@ -284,6 +297,12 @@ install_system() {
                 ;;
             */mkinitcpio.conf)
                 src="$DOTFILES_DIR/system-configs/$filename"
+                ;;
+            */udev/rules.d/*)
+                src="$DOTFILES_DIR/system-configs/udev.rules.d/$filename"
+                ;;
+            */scx_loader/*)
+                src="$DOTFILES_DIR/system-configs/scx_loader/$filename"
                 ;;
         esac
         if [[ -f "$src" ]]; then

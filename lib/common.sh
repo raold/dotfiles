@@ -14,9 +14,9 @@ log_ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# Paths
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Paths - use LIB_DIR to avoid overwriting caller's SCRIPT_DIR
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(cd "$LIB_DIR/.." && pwd)"
 CONFIG_DIR="$HOME/.config"
 WM_COMMON="$CONFIG_DIR/wm-common"
 

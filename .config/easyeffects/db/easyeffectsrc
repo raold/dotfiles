@@ -1,0 +1,9 @@
+[StreamInputs]
+inputDevice=bluez_input.CC:22:FE:11:EE:1E
+
+[StreamOutputs]
+outputDevice=bluez_output.CC:22:FE:11:EE:1E
+
+[Window]
+height=391
+width=931
