@@ -78,6 +78,8 @@ SYSTEM_CONFIGS=(
     "/etc/modprobe.d/amd-pmc.conf"
     "/etc/modprobe.d/amdgpu.conf"
     "/etc/systemd/sleep.conf.d/framework-amd.conf"
+    "/etc/systemd/logind.conf.d/lid-suspend-hibernate.conf"
+    "/etc/mkinitcpio.conf"
 )
 
 collect_dotfiles() {
@@ -149,6 +151,7 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/NetworkManager"
     mkdir -p "$DOTFILES_DIR/system-configs/modprobe.d"
     mkdir -p "$DOTFILES_DIR/system-configs/systemd-sleep"
+    mkdir -p "$DOTFILES_DIR/system-configs/logind.conf.d"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -164,6 +167,14 @@ collect_dotfiles() {
                 */sleep.conf.d/*)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
+                    ;;
+                */logind.conf.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/logind.conf.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/logind.conf.d/$filename"
+                    ;;
+                */mkinitcpio.conf)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
                     ;;
             esac
             echo -e "${GREEN}  Collected: system-configs/.../$filename${NC}"
@@ -263,6 +274,12 @@ install_system() {
                 ;;
             */sleep.conf.d/*)
                 src="$DOTFILES_DIR/system-configs/systemd-sleep/$filename"
+                ;;
+            */logind.conf.d/*)
+                src="$DOTFILES_DIR/system-configs/logind.conf.d/$filename"
+                ;;
+            */mkinitcpio.conf)
+                src="$DOTFILES_DIR/system-configs/$filename"
                 ;;
         esac
         if [[ -f "$src" ]]; then
