@@ -347,10 +347,13 @@ show_help() {
     echo ""
     echo "Collected files include:"
     echo "  - Home dotfiles (.zshrc, .gitconfig, CLAUDE.md, etc.)"
-    echo "  - .config directories (i3, polybar, kitty, etc.)"
+    echo "  - .config directories (i3, sway, hypr, polybar, waybar, kitty, etc.)"
+    echo "  - Shared WM configs (wm-common/)"
     echo "  - Claude Code settings (.claude/settings.json)"
     echo "  - Boot configs (refind_linux.conf, refind.conf)"
-    echo "  - System configs (captive-portal, modprobe, sleep)"
+    echo "  - System configs (modprobe, sleep, udev rules, scx_loader)"
+    echo ""
+    echo "For WM-specific sync, use: ./sync-wm.sh --help"
 }
 
 case "$1" in
