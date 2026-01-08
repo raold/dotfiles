@@ -1,9 +1,9 @@
-# i3 config file (v4)
-# Modular configuration using shared wm-common/ files
-# See: https://i3wm.org/docs/userguide.html
+# Sway config - Wayland i3-compatible compositor
+# Shares configuration with i3 via wm-common/
+# See: https://swaywm.org
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SHARED CONFIGURATION (synced with Sway)
+# SHARED CONFIGURATION (synced with i3)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 include ~/.config/wm-common/variables.conf
@@ -14,69 +14,98 @@ include ~/.config/wm-common/modes.conf
 include ~/.config/wm-common/window-rules.conf
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# X11-SPECIFIC SETTINGS (i3 only)
+# WAYLAND-SPECIFIC SETTINGS (Sway only)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # WM-specific command variables (used in shared keybindings)
-set $launcher_cmd ~/.config/polybar/hack/scripts/launcher.sh
-set $screenshot_cmd flameshot gui
-set $lock_cmd betterlockscreen -l
-set $clipboard_cmd rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
-set $exit_cmd i3-msg exit
+set $launcher_cmd rofi -show drun
+set $screenshot_cmd grim -g "$(slurp)" - | wl-copy
+set $lock_cmd swaylock -f
+set $clipboard_cmd cliphist list | rofi -dmenu | cliphist decode | wl-copy
+set $exit_cmd swaymsg exit
 
 # ─────────────────────────────────────────────────
-# XDG Autostart
+# Output Configuration (replaces xrandr)
 # ─────────────────────────────────────────────────
-exec --no-startup-id dex --autostart --environment i3
+output eDP-1 {
+    mode 2256x1504@60Hz
+    scale 1.25
+    # Adaptive sync (VRR) - disable for battery
+    adaptive_sync off
+}
+
+# Wallpaper (replaces feh)
+output * bg ~/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png fill
+
+# ─────────────────────────────────────────────────
+# Input Configuration
+# ─────────────────────────────────────────────────
+input type:keyboard {
+    xkb_layout us
+    repeat_delay 300
+    repeat_rate 50
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+    accel_profile adaptive
+    pointer_accel 0.3
+}
 
 # ─────────────────────────────────────────────────
 # System Tray Applets
 # ─────────────────────────────────────────────────
-exec --no-startup-id nm-applet --indicator
+exec nm-applet --indicator
 
 # ─────────────────────────────────────────────────
-# Display Configuration (xrandr)
+# Bar (waybar)
 # ─────────────────────────────────────────────────
-exec --no-startup-id xrandr --output eDP-1 --mode "2256x1504" --scale 0.84x0.84
-exec --no-startup-id xrandr --output eDP-1 --gamma 1.0:0.95:0.9
+bar {
+    swaybar_command waybar
+}
 
 # ─────────────────────────────────────────────────
-# Color Profile (ICC)
+# Notifications (dunst works on Wayland too)
 # ─────────────────────────────────────────────────
-exec --no-startup-id xcalib ~/.local/share/icc/framework.icm
+exec dunst
 
 # ─────────────────────────────────────────────────
-# Compositor (picom)
+# Clipboard Manager (cliphist - Wayland)
 # ─────────────────────────────────────────────────
-exec --no-startup-id picom -b
+exec wl-paste --watch cliphist store
 
 # ─────────────────────────────────────────────────
-# Wallpaper (feh)
+# Idle Configuration (replaces xss-lock)
 # ─────────────────────────────────────────────────
-exec --no-startup-id sleep 2 && feh --bg-fill ~/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png
+exec swayidle -w \
+    timeout 300 'swaylock -f' \
+    timeout 600 'swaymsg "output * power off"' \
+    resume 'swaymsg "output * power on"' \
+    before-sleep 'swaylock -f'
 
 # ─────────────────────────────────────────────────
-# Bar (polybar)
+# Scratchpad Terminals (Wayland - use app_id)
 # ─────────────────────────────────────────────────
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh --hack
+for_window [app_id="dropdown"] floating enable, resize set 1200 700, move position center, move scratchpad
+exec kitty --class dropdown
+
+for_window [app_id="ranger-scratch"] floating enable, resize set 1200 700, move position center, move scratchpad
+exec kitty --class ranger-scratch -e ranger
 
 # ─────────────────────────────────────────────────
-# Scratchpad Terminals (X11-specific instances)
+# XWayland (for legacy X11 apps)
 # ─────────────────────────────────────────────────
-exec --no-startup-id kitty --name dropdown
-exec --no-startup-id kitty --name ranger-scratch -e ranger
+xwayland enable
 
 # ─────────────────────────────────────────────────
-# Clipboard Manager (greenclip - X11)
+# GTK Theme Settings
 # ─────────────────────────────────────────────────
-exec --no-startup-id greenclip daemon
-
-# ─────────────────────────────────────────────────
-# Visual Effects
-# ─────────────────────────────────────────────────
-exec --no-startup-id flashfocus
-
-# ─────────────────────────────────────────────────
-# Layout Helper
-# ─────────────────────────────────────────────────
-exec --no-startup-id alternating_layouts.py
+set $gnome-schema org.gnome.desktop.interface
+exec_always {
+    gsettings set $gnome-schema gtk-theme 'Gruvbox-Material-Dark'
+    gsettings set $gnome-schema icon-theme 'Gruvbox-Material-Dark'
+    gsettings set $gnome-schema cursor-theme 'Bibata-Modern-Classic'
+    gsettings set $gnome-schema font-name 'Sans 10'
+}

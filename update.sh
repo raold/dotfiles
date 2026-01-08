@@ -53,6 +53,10 @@ CONFIG_DIRS=(
     "wal"
     "fontconfig"
     "fastfetch"
+    "wm-common"
+    "sway"
+    "hypr"
+    "waybar"
 )
 
 # .config files to sync
