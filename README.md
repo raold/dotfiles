@@ -1,3 +1,5 @@
+![Logo](https://preview.redd.it/i3-gruvboxed-my-framework-v0-cg37b1jz4xlc1.png?width=1080&crop=smart&auto=webp&s=9fcaa609a96859197b25a048af9fdf3868493d38)
+
 # Dotfiles
 
 Personal dotfiles for **Arch Linux** on **Framework Laptop 13 AMD** with a triple window manager setup and Gruvbox Material Dark theme.
