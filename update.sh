@@ -58,6 +58,7 @@ CONFIG_DIRS=(
     "hypr"
     "waybar"
     "easyeffects"
+    "spicetify"
 )
 
 # .config files to sync
@@ -70,6 +71,12 @@ CONFIG_FILES=(
 CLAUDE_FILES=(
     "settings.json"
     "settings.local.json"
+)
+
+# User scripts from .local/bin
+LOCAL_BIN_SCRIPTS=(
+    "spotify-theme"
+    "power-switch"
 )
 
 # Boot configuration files (requires sudo)
@@ -132,6 +139,17 @@ collect_dotfiles() {
             echo -e "${GREEN}  Collected: .claude/$file${NC}"
         else
             echo -e "${RED}  Not found: .claude/$file${NC}"
+        fi
+    done
+
+    # Copy user scripts from .local/bin
+    mkdir -p "$DOTFILES_DIR/.local/bin"
+    for script in "${LOCAL_BIN_SCRIPTS[@]}"; do
+        if [[ -f "$HOME/.local/bin/$script" ]]; then
+            cp "$HOME/.local/bin/$script" "$DOTFILES_DIR/.local/bin/$script"
+            echo -e "${GREEN}  Collected: .local/bin/$script${NC}"
+        else
+            echo -e "${RED}  Not found: .local/bin/$script${NC}"
         fi
     done
 

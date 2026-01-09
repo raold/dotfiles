@@ -38,17 +38,12 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.npm-global/bin:$PATH"
 export PATH="$HOME/.spicetify:$PATH"
 export PATH="$HOME/.lmstudio/bin:$PATH"
-export PATH="$HOME/.pyenv/bin:$PATH"
 export PATH="/opt/rocm/bin:$PATH"
 
 # ROCm
 export HSA_OVERRIDE_GFX_VERSION=11.0.0
 export ROCM_PATH=/opt/rocm
 export PYTORCH_ROCM_ARCH=gfx1103
-
-# Python (pyenv)
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
 
 # Starship prompt
 eval "$(starship init zsh)"

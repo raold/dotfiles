@@ -1,0 +1,76 @@
+#!/bin/bash
+# Switch Spotify themes and color schemes
+# Usage: spotify-theme [theme] [scheme]
+
+show_help() {
+    echo "Usage: spotify-theme [theme] [scheme]"
+    echo ""
+    echo "Themes:"
+    echo "  gruvify [dark|light] - Gruvify (dedicated gruvbox)"
+    echo "  comfy [dark|light]   - Comfy with gruvbox variants"
+    echo "  text [dark|light]    - Minimal text theme"
+    echo ""
+    echo "Schemes for 'comfy':"
+    echo "  dark        - Gruvbox-Material-Dark"
+    echo "  light       - Gruvbox-Material-Light"
+    echo "  gruvbox     - Original Gruvbox dark"
+    echo "  gruvbox-light"
+    echo ""
+    echo "Schemes for 'text':"
+    echo "  dark        - GruvboxMaterialDark"
+    echo "  light       - GruvboxLight"
+    echo ""
+    echo "Examples:"
+    echo "  spotify-theme gruvify       # Switch to Gruvify"
+    echo "  spotify-theme comfy dark    # Comfy + Gruvbox Material Dark"
+    echo "  spotify-theme comfy light   # Comfy + Gruvbox Material Light"
+    echo "  spotify-theme text light    # Text theme + Gruvbox Light"
+}
+
+apply_and_restart() {
+    spicetify apply && pkill -x spotify && sleep 0.5 && spotify &>/dev/null &
+    echo "Theme applied! Spotify restarting..."
+}
+
+case "${1:-}" in
+    gruvify)
+        spicetify config current_theme Gruvify inject_theme_js 0
+        case "${2:-dark}" in
+            dark)   spicetify config color_scheme Gruvbox ;;
+            light)  spicetify config color_scheme Gruvbox-Light ;;
+            *)      spicetify config color_scheme "$2" ;;
+        esac
+        apply_and_restart
+        ;;
+    comfy)
+        spicetify config current_theme Comfy inject_theme_js 1
+        case "${2:-dark}" in
+            dark)   spicetify config color_scheme Gruvbox-Material-Dark ;;
+            light)  spicetify config color_scheme Gruvbox-Material-Light ;;
+            gruvbox) spicetify config color_scheme Gruvbox ;;
+            gruvbox-light) spicetify config color_scheme Gruvbox-Light ;;
+            *)      spicetify config color_scheme "$2" ;;
+        esac
+        apply_and_restart
+        ;;
+    text)
+        spicetify config current_theme text inject_theme_js 0
+        case "${2:-dark}" in
+            dark)   spicetify config color_scheme GruvboxMaterialDark ;;
+            light)  spicetify config color_scheme GruvboxLight ;;
+            *)      spicetify config color_scheme "$2" ;;
+        esac
+        apply_and_restart
+        ;;
+    status)
+        grep -E "current_theme|color_scheme" ~/.config/spicetify/config-xpui.ini
+        ;;
+    -h|--help|help|"")
+        show_help
+        ;;
+    *)
+        echo "Unknown theme: $1"
+        show_help
+        exit 1
+        ;;
+esac

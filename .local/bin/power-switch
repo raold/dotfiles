@@ -1,0 +1,60 @@
+#!/bin/bash
+# Auto power profile switcher for Framework 13 AMD
+# Called by udev when power state changes AND at boot via systemd
+
+AC_ONLINE=$(cat /sys/class/power_supply/AC*/online 2>/dev/null || echo "0")
+GPU_DPM="/sys/class/drm/card1/device/power_dpm_force_performance_level"
+CPU_BOOST="/sys/devices/system/cpu/cpufreq/boost"
+
+if [ "$AC_ONLINE" = "1" ]; then
+    # ========== AC POWER - PERFORMANCE MODE ==========
+    # Set platform profile directly (bypasses powerprofilesctl per-policy boost bug)
+    echo performance > /sys/firmware/acpi/platform_profile 2>/dev/null
+
+    # Set EPP to performance for all CPUs (amd-pstate-epp)
+    for epp in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do
+        echo performance > "$epp" 2>/dev/null
+    done
+
+    # Enable SMT (8 cores -> 16 threads)
+    echo on > /sys/devices/system/cpu/smt/control 2>/dev/null
+
+    # Enable CPU boost (global, not per-policy)
+    echo 1 > "$CPU_BOOST" 2>/dev/null
+
+    # GPU: high performance
+    [ -f "$GPU_DPM" ] && echo "auto" > "$GPU_DPM" 2>/dev/null
+
+    logger "power-switch: AC connected - performance mode (SMT on, boost on, GPU auto)"
+else
+    # ========== BATTERY - POWER SAVER MODE ==========
+    # Set platform profile directly (bypasses powerprofilesctl per-policy boost bug)
+    echo low-power > /sys/firmware/acpi/platform_profile 2>/dev/null
+
+    # Set EPP to power for all CPUs (amd-pstate-epp)
+    for epp in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do
+        echo power > "$epp" 2>/dev/null
+    done
+
+    # Disable SMT (16 threads -> 8 cores) - saves ~15-20% power
+    echo off > /sys/devices/system/cpu/smt/control 2>/dev/null
+
+    # Disable CPU boost - saves power, reduces heat
+    echo 0 > "$CPU_BOOST" 2>/dev/null
+
+    # GPU: low power mode
+    [ -f "$GPU_DPM" ] && echo "low" > "$GPU_DPM" 2>/dev/null
+
+    # Enable aggressive audio power saving (10 second timeout)
+    echo 10 > /sys/module/snd_hda_intel/parameters/power_save 2>/dev/null
+
+    # NVMe power saving (if supported)
+    for nvme in /sys/class/nvme/*/device/power/control; do
+        echo auto > "$nvme" 2>/dev/null
+    done
+
+    # Run powertop auto-tune for additional tuning
+    /usr/bin/powertop --auto-tune &>/dev/null &
+
+    logger "power-switch: Battery mode - power-saver (SMT off, boost off, GPU low)"
+fi
