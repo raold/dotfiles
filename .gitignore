@@ -1,0 +1,20 @@
+# Backup files (prevent accumulation in version control)
+*.backup*
+*.bak
+*.save
+*.orig
+*~
+
+# Rofi theme assets (large, unused - reinstall from rofi-collection if needed)
+.config/rofi/images/
+.config/rofi/launchers/
+.config/rofi/powermenu/
+.config/rofi/applets/
+
+# Editor swap files
+*.swp
+*.swo
+.*.swp
+
+# macOS
+.DS_Store
