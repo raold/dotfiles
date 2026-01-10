@@ -33,6 +33,24 @@ alias wttr="bash ~/rice/bash-script-wttr/wttr lynchburg"
 alias dotfiles="cd ~/rice/dotfiles-repo && git status"
 alias nfl="cd ~/rice/nfl-analytics && git status"
 
+# Dissertation workflow
+export DISS_DIR="$HOME/rice/nfl-analytics/analysis/dissertation/main"
+alias diss="cd $DISS_DIR && ls -la *.tex *.pdf 2>/dev/null | head -5"
+alias dw="diss-watch"          # Continuous compilation
+alias dd="diss-diff"           # Generate tracked-changes PDF
+alias ds="diss-stats"          # Word count & PDF info
+alias dc="diss-compress"       # Compress for email
+alias dl="diss-lint"           # Check for LaTeX issues
+alias df="diss-figures"        # Manage figures
+alias dclean="diss-clean"      # Clean aux files
+
+# Quick LaTeX commands
+alias lmk="latexmk -pdf"
+alias lmkc="latexmk -c"        # Clean aux
+alias lmkca="latexmk -C"       # Clean all (including PDF)
+alias texwc="texcount -inc -total"
+alias pdfpg="pdfinfo"          # Page count (pdfpg file.pdf | grep Pages)
+
 # PATH configuration (consolidated)
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.npm-global/bin:$PATH"
