@@ -42,8 +42,8 @@ else
     # Disable CPU boost - saves power, reduces heat
     echo 0 > "$CPU_BOOST" 2>/dev/null
 
-    # GPU: low power mode
-    [ -f "$GPU_DPM" ] && echo "low" > "$GPU_DPM" 2>/dev/null
+    # GPU: auto mode (allows clock scaling for video decode)
+    [ -f "$GPU_DPM" ] && echo "auto" > "$GPU_DPM" 2>/dev/null
 
     # Enable aggressive audio power saving (10 second timeout)
     echo 10 > /sys/module/snd_hda_intel/parameters/power_save 2>/dev/null
@@ -56,5 +56,5 @@ else
     # Run powertop auto-tune for additional tuning
     /usr/bin/powertop --auto-tune &>/dev/null &
 
-    logger "power-switch: Battery mode - power-saver (SMT off, boost off, GPU low)"
+    logger "power-switch: Battery mode - power-saver (SMT off, boost off, GPU auto)"
 fi
