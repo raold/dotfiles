@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# diss-clean - Clean LaTeX auxiliary files
+# Usage: diss-clean [--all]
+#   --all: Also remove PDF output
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+REMOVE_PDF=false
+
+if [[ "${1:-}" == "--all" ]]; then
+    REMOVE_PDF=true
+fi
+
+cd "$DISS_DIR"
+
+echo "🧹 Cleaning Dissertation Directory"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Directory: $DISS_DIR"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Count files before
+BEFORE=$(find . -maxdepth 2 -type f \( \
+    -name "*.aux" -o -name "*.log" -o -name "*.out" -o -name "*.toc" \
+    -o -name "*.lof" -o -name "*.lot" -o -name "*.bbl" -o -name "*.blg" \
+    -o -name "*.fls" -o -name "*.fdb_latexmk" -o -name "*.synctex.gz" \
+    -o -name "*.nav" -o -name "*.snm" -o -name "*.vrb" -o -name "*.bcf" \
+    -o -name "*.run.xml" -o -name "*.idx" -o -name "*.ilg" -o -name "*.ind" \
+    -o -name "*.glo" -o -name "*.gls" -o -name "*.glg" -o -name "*.acn" \
+    -o -name "*.acr" -o -name "*.alg" -o -name "*-blx.bib" \
+    \) 2>/dev/null | wc -l)
+
+# Use latexmk's clean function (most thorough)
+latexmk -c -quiet 2>/dev/null || true
+
+# Also clean in chapter subdirectories
+find . -maxdepth 2 -type f \( \
+    -name "*.aux" -o -name "*.log" -o -name "*.out" -o -name "*.toc" \
+    -o -name "*.lof" -o -name "*.lot" -o -name "*.bbl" -o -name "*.blg" \
+    -o -name "*.fls" -o -name "*.fdb_latexmk" -o -name "*.synctex.gz" \
+    -o -name "*.nav" -o -name "*.snm" -o -name "*.vrb" -o -name "*.bcf" \
+    -o -name "*.run.xml" -o -name "*.idx" -o -name "*.ilg" -o -name "*.ind" \
+    -o -name "*.glo" -o -name "*.gls" -o -name "*.glg" -o -name "*.acn" \
+    -o -name "*.acr" -o -name "*.alg" -o -name "*-blx.bib" \
+    \) -delete 2>/dev/null || true
+
+# Clean diff files
+rm -f *-diff*.tex *-oldtmp-*.tex 2>/dev/null || true
+
+if [[ "$REMOVE_PDF" == true ]]; then
+    echo "Removing PDF files..."
+    rm -f *.pdf 2>/dev/null || true
+fi
+
+echo "✅ Cleaned $BEFORE auxiliary files"
+echo ""
+
+# Show current state
+echo "Remaining files:"
+ls -la *.tex *.pdf 2>/dev/null | head -10 || echo "(no .tex/.pdf files)"

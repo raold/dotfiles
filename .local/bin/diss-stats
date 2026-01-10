@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# diss-stats - Dissertation statistics (word count, pages, fonts)
+# Usage: diss-stats [main.tex]
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+MAIN_TEX="${1:-main.tex}"
+MAIN_PDF="${MAIN_TEX%.tex}.pdf"
+
+cd "$DISS_DIR"
+
+echo "📊 Dissertation Statistics"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Word count from LaTeX source
+echo "📝 WORD COUNT (from LaTeX source)"
+echo "──────────────────────────────────"
+texcount -inc -total -brief "$MAIN_TEX" 2>/dev/null | grep -E "^Words|^$"
+echo ""
+
+# Detailed breakdown
+echo "📈 DETAILED BREAKDOWN"
+echo "──────────────────────────────────"
+texcount -inc -brief "$MAIN_TEX" 2>/dev/null | head -30
+echo ""
+
+# PDF info if it exists
+if [[ -f "$MAIN_PDF" ]]; then
+    echo "📄 PDF INFO"
+    echo "──────────────────────────────────"
+    pdfinfo "$MAIN_PDF" 2>/dev/null | grep -E "^(Pages|File size|PDF version|Title|Author|CreationDate):"
+    echo ""
+
+    # File size
+    PDF_SIZE=$(du -h "$MAIN_PDF" | cut -f1)
+    echo "File size: $PDF_SIZE"
+    echo ""
+
+    # Font embedding check
+    echo "🔤 FONT EMBEDDING"
+    echo "──────────────────────────────────"
+    UNEMBEDDED=$(pdffonts "$MAIN_PDF" 2>/dev/null | tail -n +3 | grep -v "yes" | wc -l)
+    if [[ "$UNEMBEDDED" -eq 0 ]]; then
+        echo "✅ All fonts are embedded (submission-ready)"
+    else
+        echo "⚠️  $UNEMBEDDED font(s) not embedded:"
+        pdffonts "$MAIN_PDF" 2>/dev/null | grep -v "yes" | head -10
+    fi
+    echo ""
+
+    # Total fonts
+    TOTAL_FONTS=$(pdffonts "$MAIN_PDF" 2>/dev/null | tail -n +3 | wc -l)
+    echo "Total fonts used: $TOTAL_FONTS"
+else
+    echo "⚠️  PDF not found. Run 'diss-watch' or 'latexmk -pdf $MAIN_TEX' first."
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

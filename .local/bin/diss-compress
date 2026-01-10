@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# diss-compress - Compress dissertation PDF for email/submission
+# Usage: diss-compress [quality] [input.pdf]
+#   quality: screen (72dpi), ebook (150dpi), prepress (300dpi, default)
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+QUALITY="${1:-prepress}"
+INPUT_PDF="${2:-main.pdf}"
+
+cd "$DISS_DIR"
+
+if [[ ! -f "$INPUT_PDF" ]]; then
+    echo "❌ Error: $INPUT_PDF not found"
+    echo "Run 'diss-watch' or 'latexmk -pdf main.tex' first."
+    exit 1
+fi
+
+# Validate quality setting
+case "$QUALITY" in
+    screen|ebook|printer|prepress)
+        ;;
+    *)
+        echo "❌ Invalid quality: $QUALITY"
+        echo "Options: screen (72dpi), ebook (150dpi), printer (300dpi), prepress (300dpi+)"
+        exit 1
+        ;;
+esac
+
+OUTPUT_PDF="${INPUT_PDF%.pdf}-${QUALITY}.pdf"
+
+echo "📦 Compressing Dissertation PDF"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Quality: $QUALITY"
+echo "Input:   $INPUT_PDF ($(du -h "$INPUT_PDF" | cut -f1))"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+gs -sDEVICE=pdfwrite \
+   -dCompatibilityLevel=1.5 \
+   -dPDFSETTINGS=/$QUALITY \
+   -dNOPAUSE \
+   -dQUIET \
+   -dBATCH \
+   -dPrinted=false \
+   -sOutputFile="$OUTPUT_PDF" \
+   "$INPUT_PDF"
+
+if [[ -f "$OUTPUT_PDF" ]]; then
+    ORIG_SIZE=$(du -h "$INPUT_PDF" | cut -f1)
+    NEW_SIZE=$(du -h "$OUTPUT_PDF" | cut -f1)
+    ORIG_BYTES=$(stat -c%s "$INPUT_PDF")
+    NEW_BYTES=$(stat -c%s "$OUTPUT_PDF")
+    RATIO=$((100 - (NEW_BYTES * 100 / ORIG_BYTES)))
+
+    echo "✅ Compression complete!"
+    echo ""
+    echo "Original:   $ORIG_SIZE"
+    echo "Compressed: $NEW_SIZE ($RATIO% reduction)"
+    echo "Output:     $OUTPUT_PDF"
+
+    # Check if compression made it bigger (can happen with already-optimized PDFs)
+    if [[ $NEW_BYTES -ge $ORIG_BYTES ]]; then
+        echo ""
+        echo "⚠️  Note: PDF is already well-optimized, compression had minimal effect."
+    fi
+else
+    echo "❌ Error: Compression failed"
+    exit 1
+fi

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# diss-watch - Continuous LaTeX compilation with live preview
+# Usage: diss-watch [main.tex]
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+MAIN_TEX="${1:-main.tex}"
+
+cd "$DISS_DIR"
+
+echo "📄 Dissertation Watch Mode"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Directory: $DISS_DIR"
+echo "Main file: $MAIN_TEX"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Starting continuous compilation..."
+echo "Press Ctrl+C to stop"
+echo ""
+
+# -pvc = preview continuously, -pdf = generate PDF
+# -interaction=nonstopmode = don't stop on errors
+# -synctex=1 = enable SyncTeX for editor integration
+latexmk -pdf -pvc -interaction=nonstopmode -synctex=1 "$MAIN_TEX"

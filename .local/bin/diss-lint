@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# diss-lint - Check dissertation for LaTeX issues
+# Usage: diss-lint [main.tex]
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+MAIN_TEX="${1:-main.tex}"
+
+cd "$DISS_DIR"
+
+echo "🔍 Linting Dissertation"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# ChkTeX - main linter
+echo "📋 ChkTeX Warnings (top issues)"
+echo "────────────────────────────────"
+chktex -q "$MAIN_TEX" 2>&1 | head -30 || true
+CHKTEX_COUNT=$(chktex -q "$MAIN_TEX" 2>&1 | wc -l)
+echo ""
+echo "Total chktex warnings: $CHKTEX_COUNT"
+echo ""
+
+# LaCheck - additional checks
+echo "📋 LaCheck Warnings"
+echo "────────────────────────────────"
+lacheck "$MAIN_TEX" 2>&1 | head -20 || true
+LACHECK_COUNT=$(lacheck "$MAIN_TEX" 2>&1 | wc -l)
+echo ""
+echo "Total lacheck warnings: $LACHECK_COUNT"
+echo ""
+
+# Common issues to grep for
+echo "📋 Common Issues"
+echo "────────────────────────────────"
+
+# Check for common typos/issues
+echo -n "Double spaces: "
+grep -rn "  " --include="*.tex" . 2>/dev/null | wc -l
+
+echo -n "TODO/FIXME comments: "
+grep -rni "TODO\|FIXME\|XXX" --include="*.tex" . 2>/dev/null | wc -l
+
+echo -n "Undefined references: "
+grep -i "undefined" *.log 2>/dev/null | wc -l || echo "0"
+
+echo -n "Missing citations: "
+grep -i "citation.*undefined" *.log 2>/dev/null | wc -l || echo "0"
+
+echo -n "Overfull hboxes: "
+grep -c "Overfull.*hbox" *.log 2>/dev/null || echo "0"
+
+echo -n "Underfull hboxes: "
+grep -c "Underfull.*hbox" *.log 2>/dev/null || echo "0"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Show TODOs if any
+TODOS=$(grep -rni "TODO\|FIXME\|XXX" --include="*.tex" . 2>/dev/null | head -10)
+if [[ -n "$TODOS" ]]; then
+    echo ""
+    echo "📌 TODOs/FIXMEs found:"
+    echo "$TODOS"
+fi

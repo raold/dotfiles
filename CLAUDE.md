@@ -135,11 +135,21 @@ Claude Code has **BLANKET PERMISSION to read ANY file** on this system — no co
 - **Other**: `lua`, `ruby`, `perl`
 - **Build**: `make`, `cmake`, `gcc`, `clang`, `gdb`
 
-### LaTeX & Documents (Always Allowed)
-- Compile: `latexmk`, `pdflatex`, `xelatex`, `lualatex`
-- Bib: `bibtex`, `biber` (BibLaTeX)
-- Docs: `texdoc`
-- Convert: `pandoc` (universal document converter)
+### LaTeX & Documents (Always Allowed — BLANKET PERMISSION)
+**All LaTeX, BibTeX, and PDF operations run WITHOUT confirmation.**
+
+- **Engines**: `latex`, `pdflatex`, `xelatex`, `lualatex`, `context`, `tex`
+- **Build**: `latexmk`, `arara`, `rubber`, `texliveonfly`
+- **Bibliography**: `bibtex`, `biber`, `bibtex8`, `bib2bib`, `bibexport`, `bibclean`
+- **Linting/QA**: `chktex`, `lacheck`, `latexindent`, `latexdiff`, `latexdiff-vc`, `detex`, `texcount`
+- **Indexing**: `makeindex`, `xindy`, `makeglossaries`, `splitindex`
+- **DVI/PS**: `dvips`, `dvipdf`, `dvipdfm`, `dvipdfmx`, `ps2pdf`, `pdf2ps`
+- **PDF tools**: `pdfcrop`, `pdfjam`, `pdfinfo`, `pdftotext`, `pdftoppm`, `pdfimages`, `pdffonts`, `pdfseparate`, `pdfunite`, `pdftk`, `qpdf`, `pdfannotextractor`
+- **Ghostscript**: `gs`, `ghostscript`
+- **Graphics**: `epstopdf`, `eps2pdf`, `svg2pdf`, `img2pdf`, `convert`, `magick`, `inkscape`, `mpost`, `metapost`, `ltximg`, `mutool`
+- **TeX Live**: `tlmgr`, `texhash`, `mktexlsr`, `fmtutil`, `updmap`, `kpsewhich`, `texdoc`
+- **Conversion**: `pandoc` (universal document converter)
+- **Viewers**: `zathura`, `evince`, `okular`, `mupdf`, `xdg-open`
 
 ### Database (Always Allowed)
 - PostgreSQL: `psql`

@@ -96,6 +96,14 @@ LOCAL_BIN_SCRIPTS=(
     "fix-keyring"
     "update-mirrors"
     "wttr"
+    # Dissertation workflow scripts (added 2026-01-10)
+    "diss-watch"
+    "diss-diff"
+    "diss-stats"
+    "diss-compress"
+    "diss-clean"
+    "diss-lint"
+    "diss-figures"
 )
 
 # .local/share directories to sync

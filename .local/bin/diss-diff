@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# diss-diff - Generate latexdiff PDF against a previous git commit
+# Usage: diss-diff [commit] [main.tex]
+#   diss-diff           - Compare against HEAD~1
+#   diss-diff HEAD~5    - Compare against 5 commits ago
+#   diss-diff abc123    - Compare against specific commit
+
+set -euo pipefail
+
+DISS_DIR="${DISS_DIR:-$HOME/rice/nfl-analytics/analysis/dissertation/main}"
+COMMIT="${1:-HEAD~1}"
+MAIN_TEX="${2:-main.tex}"
+DIFF_DIR="$DISS_DIR/.diffs"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+cd "$DISS_DIR"
+
+echo "📝 Generating Dissertation Diff"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Comparing: $COMMIT → HEAD"
+echo "Main file: $MAIN_TEX"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Create diffs directory
+mkdir -p "$DIFF_DIR"
+
+# Generate the diff
+echo "→ Running latexdiff-vc..."
+latexdiff-vc --git --flatten -r "$COMMIT" "$MAIN_TEX" 2>/dev/null
+
+# Find the generated diff file
+DIFF_TEX=$(ls -t *-diff*.tex 2>/dev/null | head -1)
+
+if [[ -z "$DIFF_TEX" ]]; then
+    echo "❌ Error: No diff file generated"
+    exit 1
+fi
+
+echo "→ Compiling diff PDF..."
+latexmk -pdf -interaction=nonstopmode "$DIFF_TEX" 2>/dev/null
+
+DIFF_PDF="${DIFF_TEX%.tex}.pdf"
+
+if [[ -f "$DIFF_PDF" ]]; then
+    # Move to diffs directory with timestamp
+    FINAL_PDF="$DIFF_DIR/diff_${COMMIT//\//_}_$TIMESTAMP.pdf"
+    mv "$DIFF_PDF" "$FINAL_PDF"
+
+    # Clean up temp files
+    rm -f "$DIFF_TEX" "${DIFF_TEX%.tex}".{aux,log,out,toc,bbl,blg,fls,fdb_latexmk,synctex.gz} 2>/dev/null
+
+    echo ""
+    echo "✅ Diff generated: $FINAL_PDF"
+    echo ""
+    echo "Opening in PDF viewer..."
+    xdg-open "$FINAL_PDF" 2>/dev/null &
+else
+    echo "❌ Error: Failed to compile diff PDF"
+    exit 1
+fi
