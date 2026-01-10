@@ -1,0 +1,106 @@
+#!/bin/bash
+# Battery mode script for Framework 13 AMD
+# Switches to power-saving profile and stops power-hungry services
+
+set -e
+
+MODE="${1:-on}"
+
+case "$MODE" in
+    on|enable|start)
+        echo "Enabling battery mode..."
+
+        # Switch to power-saver profile
+        powerprofilesctl set power-saver
+        echo "  Power profile: power-saver"
+
+        # Disable SMT (hyperthreading) to reduce power
+        sudo sh -c 'echo off > /sys/devices/system/cpu/smt/control' 2>/dev/null
+        echo "  SMT: disabled (16 -> 8 threads)"
+
+        # Stop Docker containers (major power drain)
+        if docker ps -q 2>/dev/null | grep -q .; then
+            docker stop $(docker ps -q) 2>/dev/null
+            echo "  Docker containers: stopped"
+        else
+            echo "  Docker containers: none running"
+        fi
+
+        # Lower brightness to 30%
+        if command -v brightnessctl &>/dev/null; then
+            brightnessctl set 30% -q
+            echo "  Brightness: 30%"
+        fi
+
+        # Run powertop auto-tune
+        if command -v powertop &>/dev/null; then
+            sudo powertop --auto-tune &>/dev/null
+            echo "  Powertop: auto-tuned"
+        fi
+
+        echo "Battery mode enabled!"
+        ;;
+
+    off|disable|stop)
+        echo "Disabling battery mode..."
+
+        # Switch to balanced profile
+        powerprofilesctl set balanced
+        echo "  Power profile: balanced"
+
+        # Re-enable SMT (hyperthreading)
+        sudo sh -c 'echo on > /sys/devices/system/cpu/smt/control' 2>/dev/null
+        echo "  SMT: enabled (8 -> 16 threads)"
+
+        # Restore brightness to 50%
+        if command -v brightnessctl &>/dev/null; then
+            brightnessctl set 50% -q
+            echo "  Brightness: 50%"
+        fi
+
+        echo "Battery mode disabled."
+        echo "Note: Docker containers not auto-started. Run 'docker start' manually if needed."
+        ;;
+
+    status)
+        echo "=== Power Status ==="
+        echo "Profile: $(powerprofilesctl get)"
+        smt_status=$(cat /sys/devices/system/cpu/smt/active 2>/dev/null)
+        if [ "$smt_status" = "1" ]; then
+            echo "SMT: enabled (16 threads)"
+        else
+            echo "SMT: disabled (8 threads)"
+        fi
+        echo "Brightness: $(brightnessctl get)/$(brightnessctl max) ($(brightnessctl | grep -oP '\d+%'))"
+        if [ -f /sys/class/power_supply/BAT1/power_now ]; then
+            power=$(cat /sys/class/power_supply/BAT1/power_now)
+            printf "Power draw: %.2f W\n" $(echo "scale=2; $power/1000000" | bc)
+        fi
+        docker_count=$(docker ps -q 2>/dev/null | wc -l)
+        echo "Docker containers running: $docker_count"
+        ;;
+
+    perf|performance)
+        echo "Enabling performance mode..."
+        powerprofilesctl set performance
+        # Ensure SMT is enabled for max performance
+        sudo sh -c 'echo on > /sys/devices/system/cpu/smt/control' 2>/dev/null
+        echo "  SMT: enabled (16 threads)"
+        if command -v brightnessctl &>/dev/null; then
+            brightnessctl set 70% -q
+            echo "  Brightness: 70%"
+        fi
+        echo "Performance mode enabled."
+        ;;
+
+    *)
+        echo "Usage: battery-mode [on|off|status|perf]"
+        echo ""
+        echo "Commands:"
+        echo "  on, enable   - Enable battery saving (stops docker, dims screen)"
+        echo "  off, disable - Return to balanced mode"
+        echo "  status       - Show current power status"
+        echo "  perf         - Enable performance mode"
+        exit 1
+        ;;
+esac

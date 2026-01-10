@@ -1,0 +1,8 @@
+[Unit]
+Description=Update Arch/CachyOS keyrings before system updates
+# This ensures keyrings are fresh, preventing signature failures
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pacman -Sy --needed --noconfirm archlinux-keyring cachyos-keyring
+# If keyring is already current, --needed makes this a no-op

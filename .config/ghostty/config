@@ -1,0 +1,87 @@
+# Ghostty Configuration
+# Replicating Kitty rice: Gruvbox Material Dark Soft
+
+# ============================================
+# FONT (matching Kitty)
+# ============================================
+font-family = CaskaydiaCove NF
+font-family-bold = CaskaydiaCove NF SemiBold
+font-family-italic = CaskaydiaCove NF Italic
+font-family-bold-italic = CaskaydiaCove NF SemiBold
+
+# ============================================
+# PADDING (matching Kitty: 25px)
+# ============================================
+window-padding-x = 25
+window-padding-y = 25
+
+# ============================================
+# COLORS: Gruvbox Material Dark Soft
+# Author: Sainnhe Park
+# ============================================
+background = 32302f
+foreground = d4be98
+
+selection-background = d4be98
+selection-foreground = 32302f
+
+cursor-color = a89984
+cursor-text = 32302f
+
+# Black
+palette = 0=#665c54
+palette = 8=#928374
+
+# Red
+palette = 1=#ea6962
+palette = 9=#ea6962
+
+# Green
+palette = 2=#a9b665
+palette = 10=#a9b665
+
+# Yellow
+palette = 3=#e78a4e
+palette = 11=#d8a657
+
+# Blue
+palette = 4=#7daea3
+palette = 12=#7daea3
+
+# Magenta
+palette = 5=#d3869b
+palette = 13=#d3869b
+
+# Cyan
+palette = 6=#89b482
+palette = 14=#89b482
+
+# White
+palette = 7=#d4be98
+palette = 15=#d4be98
+
+# ============================================
+# SCROLLING
+# ============================================
+# Ghostty uses bytes, not lines (default 10MB is plenty)
+
+# ============================================
+# WINDOW BEHAVIOR
+# ============================================
+window-decoration = false
+gtk-titlebar = false
+confirm-close-surface = false
+
+# ============================================
+# SHELL INTEGRATION
+# ============================================
+shell-integration = zsh
+
+# ============================================
+# PERFORMANCE TUNING
+# ============================================
+# Reduce input latency
+gtk-single-instance = false
+
+# Optimize font rendering for speed
+freetype-load-flags = hinting,no-force-autohint,no-monochrome,autohint

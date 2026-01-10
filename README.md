@@ -36,8 +36,10 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 ### Shell & Terminal
 - `.zshrc` - Zsh with starship prompt
 - `.config/kitty/` - Kitty terminal (Gruvbox theme)
+- `.config/ghostty/` - Ghostty terminal (alternative)
 - `.config/atuin/` - Shell history sync
 - `.config/starship.toml` - Prompt configuration
+- `.config/nvim/` - Neovim full config (Lua-based)
 
 ### Desktop Environment
 - `.config/rofi/` - Application launcher
@@ -47,21 +49,45 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 
 ### CLI Tools
 - `.config/btop/` - System monitor
+- `.config/htop/` - htop layout config
 - `.config/bat/` - Syntax-highlighted cat
 - `.config/lazygit/` - Git TUI
 - `.config/fastfetch/` - System info
+- `.config/git/` - Global gitignore
+
+### Custom Scripts (`.local/bin/`)
+- `power-switch` - AC/battery power profile switching
+- `battery-mode` - Aggressive battery optimization
+- `spotify-theme` - Spotify theme customizer
+- `update-mirrors` - Reflector + CachyOS mirror refresh
+- `fix-keyring` - Emergency pacman keyring repair
+- `clip2path` - Clipboard image to file path (kitty)
+- `wttr` - Weather CLI
 
 ### Performance & Hardware
 - `system-configs/udev.rules.d/` - ADIOS I/O scheduler
 - `system-configs/scx_loader/` - scx_lavd scheduler config
 - `system-configs/modprobe.d/` - AMD GPU/PMC settings
+- `system-configs/systemd-system/` - Keyring update timer
+- `system-configs/pacman.d/hooks/` - Keyring refresh hook
 - `.config/easyeffects/` - Framework speaker EQ presets
+- `.config/slimbookbattery/` - Battery profile manager
+- `.local/share/icc/` - Framework display ICC profile
 - `refind/` - rEFInd bootloader config
+
+### Application Configs
+- `.config/arch-update/` - arch-update configuration
+- `.config/spotifyd/` - Spotify daemon
+- `.config/spicetify/` - Spotify theming (Gruvbox)
+- `.config/flameshot/` - Screenshot tool
+- `.config/nnn/` - File manager bookmarks
 
 ### System
 - `.gitconfig` - Git configuration
 - `.xinitrc`, `.xprofile` - X11 startup
-- `CLAUDE.md` - Claude Code AI assistant context
+- `CLAUDE.md` - Claude Code AI assistant context (symlinked)
+- `.claude/settings.json` - Claude Code settings (symlinked)
+- `.config/systemd/user/` - User systemd services (spotifyd, dunst)
 
 ## Installation
 
@@ -75,6 +101,12 @@ cd ~/rice/dotfiles-repo
 
 # Install system configs (sudo required)
 ./update.sh --system
+
+# Set up symlinks for version-controlled configs
+ln -s ~/rice/dotfiles-repo/CLAUDE.md ~/CLAUDE.md
+mkdir -p ~/.claude
+ln -s ~/rice/dotfiles-repo/.claude/settings.json ~/.claude/settings.json
+ln -s ~/rice/dotfiles-repo/.claude/settings.local.json ~/.claude/settings.local.json
 ```
 
 ### WM-Specific Sync
@@ -192,6 +224,8 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
 | `udev.rules.d/60-ioschedulers.rules` | `/etc/udev/rules.d/` | ADIOS for NVMe/SSD |
 | `modprobe.d/amd-pmc.conf` | `/etc/modprobe.d/` | PMC soft-dep, disable STB |
 | `modprobe.d/amdgpu.conf` | `/etc/modprobe.d/` | Disable PSR for stable resume |
+| `systemd-system/keyring-update.*` | `/etc/systemd/system/` | Daily keyring sync (prevents signature failures) |
+| `pacman.d/hooks/refresh-keyring.hook` | `/etc/pacman.d/hooks/` | Auto-populate keyring on update |
 
 ### Verify Setup
 

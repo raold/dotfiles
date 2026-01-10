@@ -1,0 +1,28 @@
+#!/bin/bash
+# update-mirrors - Refresh both Arch and CachyOS mirrors
+set -e
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+log() { echo -e "${GREEN}==>${NC} ${BOLD}$1${NC}"; }
+
+log "Updating Arch Linux mirrors (reflector)..."
+sudo systemctl start reflector.service
+
+log "Updating CachyOS mirrors (rate-mirrors)..."
+rate-mirrors --protocol https --save /tmp/cachyos-mirrorlist cachyos
+
+# Update all CachyOS mirror lists
+sudo cp /tmp/cachyos-mirrorlist /etc/pacman.d/cachyos-mirrorlist
+
+# Also update the v4 mirrorlist (same mirrors, different path format)
+# rate-mirrors outputs x86_64 format, v4 uses x86_64_v4
+sed 's|/x86_64/|/x86_64_v4/|g' /tmp/cachyos-mirrorlist | sudo tee /etc/pacman.d/cachyos-v4-mirrorlist > /dev/null
+
+rm /tmp/cachyos-mirrorlist
+
+log "Mirror update complete!"
+log "Arch mirrors: /etc/pacman.d/mirrorlist"
+log "CachyOS mirrors: /etc/pacman.d/cachyos-mirrorlist"
+log "CachyOS v4 mirrors: /etc/pacman.d/cachyos-v4-mirrorlist"

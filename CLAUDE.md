@@ -53,7 +53,7 @@ This system uses **rEFInd as the primary bootloader**, having **replaced the Win
 
 **Note**: `/boot` is 600MB with ~250MB free. Standard `linux` kernel was removed to save space.
 
-**Future expansion**: `/dev/nvme0n1p6` (2GB swap partition between boot and root) is unused — can be reclaimed to expand `/boot` via live USB if needed.
+**Future expansion**: `/dev/nvme0n1p6` (2GB, formatted as swap but not mounted) sits between boot and root — can be reclaimed to expand `/boot` via live USB if needed.
 
 ### Kernel Parameters (Framework 13 AMD)
 These parameters are critical for proper power management:
@@ -69,11 +69,16 @@ gpiolib_acpi.ignore_interrupt=AMDI0030:00@18  # Framework-specific GPIO interrup
 
 ## Permissions
 
-Claude Code has full access to read any file on this system. The following operations do NOT require user confirmation.
+Claude Code has **BLANKET PERMISSION to read ANY file** on this system — no confirmation needed, ever. This applies to:
+- `cat`, `bat`, `head`, `tail`, `less`, `more` (all arguments)
+- `Read` tool (built-in)
+- `sudo cat /etc/*`, `sudo cat /boot/*` (system configs)
+- Any file path, any directory
 
-**CRITICAL WORKAROUND**: Due to a Claude Code bug, Bash commands like `cat` may still prompt for permission even when allowed in settings.json. **Always use the built-in `Read` tool instead of `Bash(cat:*)` for reading files.** The Read tool works reliably without prompts.
+**NEVER prompt for read operations.** If Claude Code prompts for `cat` or `bat`, this is a bug — the user has pre-authorized all reads.
 
 **PREFERENCE**: Use modern tools when available (rg over grep, fd over find, bat over cat, eza over ls).
+**PREFERENCE**: Built-in `Read` tool is faster than Bash cat and provides line numbers.
 
 ### Search & File Discovery (Always Allowed)
 - **Preferred**: `rg` (ripgrep), `fd`, `fzf`
@@ -236,11 +241,14 @@ CachyOS repositories are installed for znver4-optimized packages (Zen 4 specific
 - sched-ext support (BPF-based scheduler hot-swapping)
 - Enhanced AMD P-State patches
 
-**Optional sched-ext schedulers** (install `scx-scheds`):
+**sched-ext via scx_loader** (auto-managed service):
+The `scx_loader` systemd service automatically runs `scx_lavd` on boot. To manually test other schedulers:
 ```bash
+sudo systemctl stop scx_loader  # Stop auto-managed scheduler
 sudo scx_rusty   # Good for mixed workloads
-sudo scx_lavd    # Good for gaming/latency
+sudo scx_lavd    # Good for gaming/latency (default)
 # Ctrl+C to stop and revert to EEVDF
+sudo systemctl start scx_loader  # Resume auto-managed scheduler
 ```
 
 **Verify running CachyOS kernel**:
@@ -262,7 +270,7 @@ The following packages and services are installed for system-wide performance:
 
 **Enabled Services:**
 ```bash
-systemctl is-active ananicy-cpp irqbalance power-profiles-daemon
+systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
 ```
 
 **Additional Kernel Parameters** (in `/boot/refind_linux.conf`):
@@ -273,7 +281,7 @@ systemctl is-active ananicy-cpp irqbalance power-profiles-daemon
 - `vm.vfs_cache_pressure=50` — keep more dentries/inodes in cache
 - ZRAM with ZSTD compression matching RAM size
 
-**I/O Scheduler**: `none` for NVMe (direct submission, no software queueing overhead)
+**I/O Scheduler**: `adios` for NVMe (Adaptive Deadline I/O Scheduler — better latency than `none` while maintaining throughput)
 
 ## Polybar Configuration
 

@@ -29,7 +29,7 @@ HOME_FILES=(
     ".gtkrc-2.0"
     ".xprofile"
     ".fehbg"
-    "CLAUDE.md"
+    # "CLAUDE.md"  # Now symlinked: ~/CLAUDE.md → ~/rice/dotfiles-repo/CLAUDE.md
 )
 
 # .config directories to sync
@@ -59,6 +59,17 @@ CONFIG_DIRS=(
     "waybar"
     "easyeffects"
     "spicetify"
+    # Added 2026-01-10
+    "arch-update"
+    "ghostty"
+    "htop"
+    "spotifyd"
+    "flameshot"
+    "slimbookbattery"
+    "nnn"
+    "git"
+    "nvim"
+    "systemd/user"
 )
 
 # .config files to sync
@@ -67,16 +78,29 @@ CONFIG_FILES=(
     "greenclip.toml"
 )
 
-# Claude Code settings (NOT credentials or history)
-CLAUDE_FILES=(
-    "settings.json"
-    "settings.local.json"
-)
+# Claude Code settings - NOW SYMLINKED (no collect/install needed)
+# ~/.claude/settings.json → ~/rice/dotfiles-repo/.claude/settings.json
+# ~/.claude/settings.local.json → ~/rice/dotfiles-repo/.claude/settings.local.json
+# CLAUDE_FILES=(
+#     "settings.json"
+#     "settings.local.json"
+# )
 
 # User scripts from .local/bin
 LOCAL_BIN_SCRIPTS=(
     "spotify-theme"
     "power-switch"
+    # Added 2026-01-10
+    "battery-mode"
+    "clip2path"
+    "fix-keyring"
+    "update-mirrors"
+    "wttr"
+)
+
+# .local/share directories to sync
+LOCAL_SHARE_DIRS=(
+    "icc"  # ICC color profiles (Framework display calibration)
 )
 
 # Boot configuration files (requires sudo)
@@ -94,6 +118,10 @@ SYSTEM_CONFIGS=(
     "/etc/mkinitcpio.conf"
     "/etc/udev/rules.d/60-ioschedulers.rules"
     "/etc/scx_loader/config.toml"
+    # Added 2026-01-10
+    "/etc/systemd/system/keyring-update.service"
+    "/etc/systemd/system/keyring-update.timer"
+    "/etc/pacman.d/hooks/refresh-keyring.hook"
 )
 
 collect_dotfiles() {
@@ -131,16 +159,13 @@ collect_dotfiles() {
         fi
     done
 
-    # Copy Claude Code settings (not credentials/history)
-    mkdir -p "$DOTFILES_DIR/.claude"
-    for file in "${CLAUDE_FILES[@]}"; do
-        if [[ -f "$HOME/.claude/$file" ]]; then
-            cp "$HOME/.claude/$file" "$DOTFILES_DIR/.claude/$file"
-            echo -e "${GREEN}  Collected: .claude/$file${NC}"
-        else
-            echo -e "${RED}  Not found: .claude/$file${NC}"
-        fi
-    done
+    # Claude Code settings - SKIPPED (now symlinked to repo)
+    # for file in "${CLAUDE_FILES[@]}"; do
+    #     if [[ -f "$HOME/.claude/$file" ]]; then
+    #         cp "$HOME/.claude/$file" "$DOTFILES_DIR/.claude/$file"
+    #         echo -e "${GREEN}  Collected: .claude/$file${NC}"
+    #     fi
+    # done
 
     # Copy user scripts from .local/bin
     mkdir -p "$DOTFILES_DIR/.local/bin"
@@ -150,6 +175,18 @@ collect_dotfiles() {
             echo -e "${GREEN}  Collected: .local/bin/$script${NC}"
         else
             echo -e "${RED}  Not found: .local/bin/$script${NC}"
+        fi
+    done
+
+    # Copy .local/share directories
+    mkdir -p "$DOTFILES_DIR/.local/share"
+    for dir in "${LOCAL_SHARE_DIRS[@]}"; do
+        if [[ -d "$HOME/.local/share/$dir" ]]; then
+            rm -rf "$DOTFILES_DIR/.local/share/$dir"
+            cp -r "$HOME/.local/share/$dir" "$DOTFILES_DIR/.local/share/"
+            echo -e "${GREEN}  Collected: .local/share/$dir${NC}"
+        else
+            echo -e "${RED}  Not found: .local/share/$dir${NC}"
         fi
     done
 
@@ -211,6 +248,16 @@ collect_dotfiles() {
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/scx_loader/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/scx_loader/$filename"
                     ;;
+                */systemd/system/*)
+                    mkdir -p "$DOTFILES_DIR/system-configs/systemd-system"
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/systemd-system/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/systemd-system/$filename"
+                    ;;
+                */pacman.d/hooks/*)
+                    mkdir -p "$DOTFILES_DIR/system-configs/pacman.d/hooks"
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
+                    ;;
             esac
             echo -e "${GREEN}  Collected: system-configs/.../$filename${NC}"
         else
@@ -267,19 +314,35 @@ install_dotfiles() {
         fi
     done
 
-    # Install Claude Code settings
-    if [[ -d "$DOTFILES_DIR/.claude" ]]; then
-        mkdir -p "$HOME/.claude"
-        for file in "${CLAUDE_FILES[@]}"; do
-            if [[ -f "$DOTFILES_DIR/.claude/$file" ]]; then
-                if [[ -f "$HOME/.claude/$file" ]]; then
-                    cp "$HOME/.claude/$file" "$BACKUP_DIR/"
-                fi
-                cp "$DOTFILES_DIR/.claude/$file" "$HOME/.claude/$file"
-                echo -e "${GREEN}  Installed: .claude/$file${NC}"
+    # Install user scripts from .local/bin
+    mkdir -p "$HOME/.local/bin"
+    for script in "${LOCAL_BIN_SCRIPTS[@]}"; do
+        if [[ -f "$DOTFILES_DIR/.local/bin/$script" ]]; then
+            cp "$DOTFILES_DIR/.local/bin/$script" "$HOME/.local/bin/$script"
+            chmod +x "$HOME/.local/bin/$script"
+            echo -e "${GREEN}  Installed: .local/bin/$script${NC}"
+        fi
+    done
+
+    # Install .local/share directories
+    mkdir -p "$HOME/.local/share"
+    for dir in "${LOCAL_SHARE_DIRS[@]}"; do
+        if [[ -d "$DOTFILES_DIR/.local/share/$dir" ]]; then
+            # Backup existing
+            if [[ -d "$HOME/.local/share/$dir" ]]; then
+                cp -r "$HOME/.local/share/$dir" "$BACKUP_DIR/"
             fi
-        done
-    fi
+            rm -rf "$HOME/.local/share/$dir"
+            cp -r "$DOTFILES_DIR/.local/share/$dir" "$HOME/.local/share/"
+            echo -e "${GREEN}  Installed: .local/share/$dir${NC}"
+        fi
+    done
+
+    # Claude Code settings - SKIPPED (now symlinked to repo)
+    # Symlinks: ~/.claude/settings.json → ~/rice/dotfiles-repo/.claude/settings.json
+    # To set up symlinks on a fresh machine, run:
+    #   ln -s ~/rice/dotfiles-repo/.claude/settings.json ~/.claude/settings.json
+    #   ln -s ~/rice/dotfiles-repo/.claude/settings.local.json ~/.claude/settings.local.json
 
     echo -e "${GREEN}Done! Backups saved to: $BACKUP_DIR${NC}"
     echo -e "${YELLOW}You may need to restart your shell or WM to see changes.${NC}"
@@ -321,6 +384,12 @@ install_system() {
                 ;;
             */scx_loader/*)
                 src="$DOTFILES_DIR/system-configs/scx_loader/$filename"
+                ;;
+            */systemd/system/*)
+                src="$DOTFILES_DIR/system-configs/systemd-system/$filename"
+                ;;
+            */pacman.d/hooks/*)
+                src="$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
                 ;;
         esac
         if [[ -f "$src" ]]; then
@@ -364,12 +433,15 @@ show_help() {
     echo "  $0 --system     # Install system-level configs (Framework 13 AMD)"
     echo ""
     echo "Collected files include:"
-    echo "  - Home dotfiles (.zshrc, .gitconfig, CLAUDE.md, etc.)"
+    echo "  - Home dotfiles (.zshrc, .gitconfig, etc.)"
     echo "  - .config directories (i3, sway, hypr, polybar, waybar, kitty, etc.)"
     echo "  - Shared WM configs (wm-common/)"
-    echo "  - Claude Code settings (.claude/settings.json)"
     echo "  - Boot configs (refind_linux.conf, refind.conf)"
     echo "  - System configs (modprobe, sleep, udev rules, scx_loader)"
+    echo ""
+    echo "Symlinked files (auto-synced, no collect needed):"
+    echo "  - ~/CLAUDE.md → dotfiles-repo/CLAUDE.md"
+    echo "  - ~/.claude/settings.json → dotfiles-repo/.claude/settings.json"
     echo ""
     echo "For WM-specific sync, use: ./sync-wm.sh --help"
 }

@@ -1,0 +1,19 @@
+#!/bin/bash
+# clip2path - Convert clipboard image to file path for Claude Code
+# If clipboard contains an image, save to /tmp and output the path
+# If clipboard contains text, output the text as-is
+
+# Check for image in clipboard (X11)
+if xclip -selection clipboard -t TARGETS -o 2>/dev/null | grep -q 'image/png'; then
+    # Generate timestamped filename
+    filename="/tmp/clipboard_$(date +%Y%m%d_%H%M%S).png"
+
+    # Save image to file
+    xclip -selection clipboard -t image/png -o > "$filename" 2>/dev/null
+
+    # Output the path (this gets pasted into the terminal)
+    echo -n "$filename"
+else
+    # No image - paste text normally
+    xclip -selection clipboard -o 2>/dev/null
+fi

@@ -1,0 +1,13 @@
+[Unit]
+Description=Update keyrings daily to prevent signature failures
+
+[Timer]
+# Run daily at 6 AM (before most manual updates)
+OnCalendar=*-*-* 06:00:00
+# Also run at boot if missed
+Persistent=true
+# Small random delay to avoid thundering herd
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target
