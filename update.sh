@@ -104,6 +104,7 @@ LOCAL_BIN_SCRIPTS=(
     "diss-clean"
     "diss-lint"
     "diss-figures"
+    "diss-chapter"
 )
 
 # .local/share directories to sync

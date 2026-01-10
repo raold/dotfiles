@@ -43,6 +43,7 @@ alias dc="diss-compress"       # Compress for email
 alias dl="diss-lint"           # Check for LaTeX issues
 alias df="diss-figures"        # Manage figures
 alias dclean="diss-clean"      # Clean aux files
+alias dchap="diss-chapter"     # Per-chapter compilation
 
 # Quick LaTeX commands
 alias lmk="latexmk -pdf"

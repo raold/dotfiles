@@ -355,6 +355,7 @@
       "Bash(diss-clean:*)",
       "Bash(diss-lint:*)",
       "Bash(diss-figures:*)",
+      "Bash(diss-chapter:*)",
       "Bash(ffprobe:*)",
       "Bash(mediainfo:*)",
       "Bash(exiftool:*)",
