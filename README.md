@@ -144,6 +144,71 @@ Optimized for **Framework Laptop 13 AMD** (Ryzen 7040 series):
 - ICC color profile for BOE display
 - Speaker EQ for downward-firing speakers
 
+## CachyOS Performance Stack
+
+This setup uses the [CachyOS kernel](https://cachyos.org/) and performance packages for optimal desktop responsiveness:
+
+### Kernel & CPU Scheduling
+
+| Component | Setting | Purpose |
+|-----------|---------|---------|
+| **Kernel** | `linux-cachyos` | znver4-optimized for Zen 4 (Clang/LLVM, 1000Hz) |
+| **CPU Scheduler** | `scx_lavd` via scx_loader | BPF-based scheduler for low-latency desktop use |
+| **Fallback** | EEVDF | Default if scx_loader not running |
+| **CPU Governor** | `amd-pstate-epp` | AMD's native power management with EPP hints |
+
+**scx_lavd** is designed for interactive workloads (originally for Steam Deck) — prioritizes latency over throughput.
+
+### I/O Scheduling
+
+```bash
+# system-configs/udev.rules.d/60-ioschedulers.rules
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="adios"
+```
+
+The **ADIOS** (Adaptive Deadline I/O Scheduler) is optimized for NVMe SSDs, providing better latency than the default `none` or `mq-deadline` schedulers while maintaining throughput.
+
+### Power Management
+
+- **power-profiles-daemon**: AMD-recommended over TLP (respects platform limits)
+  - `powerprofilesctl set power-saver` — Battery focus
+  - `powerprofilesctl set balanced` — Normal use
+  - `powerprofilesctl set performance` — Full power
+- **ananicy-cpp**: Auto-prioritizes processes (browsers get nice, builds get background)
+- **irqbalance**: Distributes hardware interrupts across CPU cores
+
+### System Services
+
+```bash
+# Enabled services
+systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
+```
+
+### Configuration Files
+
+| File | System Path | Purpose |
+|------|-------------|---------|
+| `scx_loader/config.toml` | `/etc/scx_loader/` | Default scheduler (scx_lavd, Auto mode) |
+| `udev.rules.d/60-ioschedulers.rules` | `/etc/udev/rules.d/` | ADIOS for NVMe/SSD |
+| `modprobe.d/amd-pmc.conf` | `/etc/modprobe.d/` | PMC soft-dep, disable STB |
+| `modprobe.d/amdgpu.conf` | `/etc/modprobe.d/` | Disable PSR for stable resume |
+
+### Verify Setup
+
+```bash
+# Check active scheduler
+cat /sys/kernel/sched_ext/root/ops  # Should show: lavd
+
+# Check I/O scheduler
+cat /sys/block/nvme0n1/queue/scheduler  # Should show: [adios]
+
+# Check power profile
+powerprofilesctl get  # balanced / power-saver / performance
+
+# Check CPU governor
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver  # amd-pstate-epp
+```
+
 ## Documentation
 
 - [WM-SETUP.md](WM-SETUP.md) - Complete triple WM guide
