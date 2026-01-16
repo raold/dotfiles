@@ -131,6 +131,8 @@ SYSTEM_CONFIGS=(
     "/etc/systemd/system/keyring-update.service"
     "/etc/systemd/system/keyring-update.timer"
     "/etc/pacman.d/hooks/refresh-keyring.hook"
+    # Added 2026-01-16 (captive portal fix)
+    "/etc/NetworkManager/conf.d/20-connectivity.conf"
 )
 
 collect_dotfiles() {
@@ -219,7 +221,7 @@ collect_dotfiles() {
     done
 
     # Copy system configs (requires sudo)
-    mkdir -p "$DOTFILES_DIR/system-configs/NetworkManager"
+    mkdir -p "$DOTFILES_DIR/system-configs/NetworkManager/conf.d"
     mkdir -p "$DOTFILES_DIR/system-configs/modprobe.d"
     mkdir -p "$DOTFILES_DIR/system-configs/systemd-sleep"
     mkdir -p "$DOTFILES_DIR/system-configs/logind.conf.d"
@@ -229,6 +231,10 @@ collect_dotfiles() {
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
             case "$filepath" in
+                */NetworkManager/conf.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/NetworkManager/conf.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/NetworkManager/conf.d/$filename"
+                    ;;
                 */NetworkManager/*)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/NetworkManager/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/NetworkManager/$filename"
@@ -373,6 +379,9 @@ install_system() {
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         filename=$(basename "$filepath")
         case "$filepath" in
+            */NetworkManager/conf.d/*)
+                src="$DOTFILES_DIR/system-configs/NetworkManager/conf.d/$filename"
+                ;;
             */NetworkManager/*)
                 src="$DOTFILES_DIR/system-configs/NetworkManager/$filename"
                 ;;

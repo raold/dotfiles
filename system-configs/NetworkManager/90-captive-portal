@@ -1,7 +1,7 @@
 #!/bin/bash
 # Captive Portal Auto-Open Script
 # Opens browser when NetworkManager detects captive portal
-# Backup: /etc/NetworkManager/dispatcher.d/90-captive-portal.backup-20260101-105301
+# Supports both X11 (i3) and Wayland (Sway/Hyprland)
 
 LOG="/tmp/captive-portal.log"
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOG"; }
@@ -17,48 +17,68 @@ fi
 log "Connectivity change detected on $interface"
 
 # Check if we're in portal state
-connectivity=$(nmcli -t -f STATE general 2>/dev/null | head -1)
-log "Connectivity state: $connectivity"
+connectivity="${CONNECTIVITY_STATE:-$(nmcli -t -f CONNECTIVITY general 2>/dev/null)}"
+log "Connectivity state: $connectivity (env: ${CONNECTIVITY_STATE:-not set})"
 
-if [ "$connectivity" = "portal" ]; then
-    log "Portal detected, finding active session..."
+# Trigger on portal OR limited (some portals report as limited)
+if [[ "$connectivity" =~ ^(PORTAL|portal|LIMITED|limited)$ ]]; then
+    log "Portal detected, finding active graphical session..."
     
-    # Method 1: Use loginctl to find active graphical session (systemd-based, most reliable)
-    ACTIVE_SESSION=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$3 != "" {print $1; exit}')
-    
-    if [ -n "$ACTIVE_SESSION" ]; then
-        DISPLAY_USER=$(loginctl show-session "$ACTIVE_SESSION" -p Name --value 2>/dev/null)
-        DISPLAY_VAL=$(loginctl show-session "$ACTIVE_SESSION" -p Display --value 2>/dev/null)
-        SESSION_TYPE=$(loginctl show-session "$ACTIVE_SESSION" -p Type --value 2>/dev/null)
-        log "Found session: $ACTIVE_SESSION, user: $DISPLAY_USER, display: $DISPLAY_VAL, type: $SESSION_TYPE"
-    fi
-    
-    # Method 2: Fallback to who command if loginctl fails
-    if [ -z "$DISPLAY_USER" ]; then
-        DISPLAY_USER=$(who 2>/dev/null | grep -m1 'tty\|pts' | awk '{print $1}')
-        DISPLAY_VAL=":0"
-        log "Fallback to who: user=$DISPLAY_USER, display=$DISPLAY_VAL"
-    fi
-    
-    if [ -n "$DISPLAY_USER" ] && [ -n "$DISPLAY_VAL" ]; then
-        # Use neverssl.com - guaranteed HTTP, triggers captive portal redirect
-        PORTAL_URL="http://neverssl.com"
-        log "Opening $PORTAL_URL for user $DISPLAY_USER on display $DISPLAY_VAL"
+    # Find active graphical session using loginctl
+    while read -r session_id; do
+        [ -z "$session_id" ] && continue
         
-        # Set up environment for GUI app
-        export DISPLAY="$DISPLAY_VAL"
-        export XAUTHORITY="/home/$DISPLAY_USER/.Xauthority"
+        SESSION_TYPE=$(loginctl show-session "$session_id" -p Type --value 2>/dev/null)
+        SESSION_STATE=$(loginctl show-session "$session_id" -p State --value 2>/dev/null)
         
-        # Try xdg-open first (respects default browser)
-        if sudo -u "$DISPLAY_USER" DISPLAY="$DISPLAY_VAL" XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" xdg-open "$PORTAL_URL" 2>>"$LOG"; then
-            log "Browser opened successfully"
-        else
-            log "xdg-open failed, trying firefox directly"
-            sudo -u "$DISPLAY_USER" DISPLAY="$DISPLAY_VAL" XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" firefox "$PORTAL_URL" 2>>"$LOG" &
+        # Only consider active graphical sessions (x11 or wayland)
+        if [[ "$SESSION_STATE" == "active" ]] && [[ "$SESSION_TYPE" =~ ^(x11|wayland)$ ]]; then
+            DISPLAY_USER=$(loginctl show-session "$session_id" -p Name --value 2>/dev/null)
+            USER_ID=$(loginctl show-session "$session_id" -p User --value 2>/dev/null)
+            log "Found active $SESSION_TYPE session: $session_id, user: $DISPLAY_USER (uid: $USER_ID)"
+            
+            PORTAL_URL="http://neverssl.com"
+            
+            if [ "$SESSION_TYPE" = "x11" ]; then
+                # X11 session (i3wm)
+                DISPLAY_VAL=$(loginctl show-session "$session_id" -p Display --value 2>/dev/null)
+                DISPLAY_VAL="${DISPLAY_VAL:-:0}"
+                log "X11 mode: DISPLAY=$DISPLAY_VAL"
+                log "Opening $PORTAL_URL for user $DISPLAY_USER"
+                
+                # Use runuser (designed for running commands as another user from root)
+                runuser -u "$DISPLAY_USER" -- env \
+                    DISPLAY="$DISPLAY_VAL" \
+                    XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" \
+                    nohup xdg-open "$PORTAL_URL" >>"$LOG" 2>&1 &
+                
+                log "Browser launch initiated (X11)"
+                
+            elif [ "$SESSION_TYPE" = "wayland" ]; then
+                # Wayland session (Sway/Hyprland)
+                XDG_RUNTIME_DIR="/run/user/$USER_ID"
+                WAYLAND_DISPLAY=$(ls "$XDG_RUNTIME_DIR"/wayland-* 2>/dev/null | head -1 | xargs basename 2>/dev/null)
+                WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+                log "Wayland mode: XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR, WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+                log "Opening $PORTAL_URL for user $DISPLAY_USER"
+                
+                runuser -u "$DISPLAY_USER" -- env \
+                    XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+                    WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+                    nohup xdg-open "$PORTAL_URL" >>"$LOG" 2>&1 &
+                
+                log "Browser launch initiated (Wayland)"
+            fi
+            
+            # Only open for first active session found
+            break
         fi
-    else
-        log "ERROR: Could not determine user or display"
+    done < <(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}')
+    
+    # Check if we found any session
+    if [ -z "$DISPLAY_USER" ]; then
+        log "ERROR: No active graphical session found"
     fi
 else
-    log "Not in portal state, no action needed"
+    log "Not in portal state ($connectivity), no action needed"
 fi
