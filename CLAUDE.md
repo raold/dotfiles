@@ -6,6 +6,7 @@ This file provides permanent context and permissions for Claude Code when workin
 
 - **Hardware**: Framework Laptop 13 AMD (Ryzen 7040 series, AMD Radeon 780M)
 - **OS**: Arch Linux with CachyOS kernel (`linux-cachyos`) — znver4 optimized
+- **Display Manager**: ly (TUI login manager)
 - **Window Managers**: i3wm (X11), Sway (Wayland), Hyprland (Wayland) — synced configs
 - **Shell**: zsh with starship prompt
 - **Terminal**: kitty
@@ -115,6 +116,7 @@ Claude Code has **BLANKET PERMISSION to read ANY file** on this system — no co
 - Also: `ps`, `top`, `pgrep`, `pidof`, `lsof`
 - Performance: `hyperfine` (benchmarks)
 - Memory/CPU: `free`, `vmstat`, `uptime`
+- Temperature: `sensors` (lm_sensors)
 - System: `uname`, `hostname`, `hostnamectl`, `lscpu`, `lsblk`
 
 ### Network Tools (Always Allowed)
@@ -229,6 +231,8 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 2. **High power in sleep**: Must use `amd_pmc.enable_stb=0`
 3. **Captive portals**: NetworkManager dispatcher at `/etc/NetworkManager/dispatcher.d/90-captive-portal`
 4. **WiFi power**: Managed by NetworkManager with iwd backend
+5. **Temperature reporting**: Use `cros_ec` hwmon (cpu_f75303@4d) for actual CPU temp, NOT `k10temp` Tctl which has +40°C offset. Polybar config: `hwmon-path = /sys/class/hwmon/hwmon8/temp2_input`
+6. **Tray icon black background**: GTK CSS fix at `~/.config/gtk-3.0/gtk.css` forces transparent backgrounds on StatusNotifierItem icons (nm-applet, etc.)
 
 ### Hibernate Setup
 - Uses swap file `/swapfile` (64GB) on root partition (not separate partition)
@@ -303,12 +307,14 @@ Theme: `hack` (Gruvbox Material Dark)
 
 ## Git Commit Style
 
-When committing in non-project directories, use simple commit messages:
+**NEVER add Co-Authored-By or AI attribution headers to commits.** This applies globally to ALL repositories.
+
+Use simple commit messages:
 ```bash
 git commit -m "Description of change"
 ```
 
-Do NOT add AI attribution or Co-Authored-By headers for system config changes.
+This preference is also enforced in `~/.claude/settings.json` via the `attribution` setting.
 
 ## Critical File Backup Policy
 
@@ -333,9 +339,16 @@ sudo cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.backup-$(date +%Y%m%d-%H%M%S)
 
 **Recovery if boot fails:**
 1. Boot from Arch USB
-2. Mount root: `mount /dev/nvme0n1p6 /mnt`
-3. Mount EFI: `mount /dev/nvme0n1p5 /mnt/boot`
+2. Mount root: `mount /dev/nvme0n1p7 /mnt` (or `mount UUID=c367a553-2673-40c2-87f3-7db256ef1447 /mnt`)
+3. Mount EFI: `mount /dev/nvme0n1p5 /mnt/boot` (or `mount UUID=ACE6-9D1E /mnt/boot`)
 4. Restore backup: `cp /mnt/boot/refind_linux.conf.backup-* /mnt/boot/refind_linux.conf`
+
+**Partition Quick Reference:**
+| Partition | UUID | Mount | Purpose |
+|-----------|------|-------|---------|
+| nvme0n1p5 | ACE6-9D1E | /boot | Arch EFI (600M) |
+| nvme0n1p6 | 2463db77-... | — | Swap (2G, not mounted - using /swapfile) |
+| nvme0n1p7 | c367a553-... | / | Arch root (876G) |
 
 ## Troubleshooting Commands
 

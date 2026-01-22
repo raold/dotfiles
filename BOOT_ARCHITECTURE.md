@@ -3,7 +3,7 @@
 > **System:** Framework Laptop with AMD CPU
 > **OS:** Arch Linux + Windows 11 dual-boot
 > **Bootloader:** rEFInd
-> **Last Updated:** 2024-12-20
+> **Last Updated:** 2026-01-22
 
 ---
 
@@ -13,11 +13,11 @@
 |-----------|------|------|-------|------|---------|
 | `nvme0n1p1` | 100M | EFI (ESP) | — | `A822-107C` | Windows EFI partition |
 | `nvme0n1p2` | 16M | MSR | — | — | Microsoft Reserved |
-| `nvme0n1p3` | 983G | NTFS | — | `DA6622CF6622ABE7` | Windows C: drive |
-| `nvme0n1p4` | 600M | EFI (ESP) | `/boot` | `ACE6-9D1E` | Arch EFI/boot partition |
-| `nvme0n1p5` | 2G | swap | — | `2463db77-...` | Linux swap |
-| `nvme0n1p6` | 876G | ext4 | `/` | `c367a553-2673-40c2-87f3-7db256ef1447` | Arch root |
-| `nvme0n1p7` | 761M | NTFS | — | `92DA7A75DA7A5607` | Windows Recovery |
+| `nvme0n1p3` | 982G | NTFS | — | `DA6622CF6622ABE7` | Windows C: drive |
+| `nvme0n1p4` | 917M | NTFS | — | `4CBADB9EBADB833E` | Windows Recovery |
+| `nvme0n1p5` | 600M | EFI (ESP) | `/boot` | `ACE6-9D1E` | Arch EFI/boot partition |
+| `nvme0n1p6` | 2G | swap | — | `2463db77-d0c1-417f-a00c-7f9df87b0d26` | Linux swap (not mounted, using /swapfile) |
+| `nvme0n1p7` | 876G | ext4 | `/` | `c367a553-2673-40c2-87f3-7db256ef1447` | Arch root |
 
 ### Partition UUIDs (PARTUUID)
 
@@ -26,8 +26,8 @@ These are GPT partition GUIDs used in rEFInd `volume` directives:
 | Partition | PARTUUID |
 |-----------|----------|
 | `nvme0n1p1` (Windows ESP) | `dd13a825-93d3-4f79-bf42-3ab4ff82d5a0` |
-| `nvme0n1p4` (Arch ESP) | `639512fa-8c83-4f9c-9e43-8b9f32d0181d` |
-| `nvme0n1p6` (Arch root) | `c21470fe-0a6c-4e8b-a24d-1dd860bf719f` |
+| `nvme0n1p5` (Arch ESP) | `639512fa-8c83-4f9c-9e43-8b9f32d0181d` |
+| `nvme0n1p7` (Arch root) | `c21470fe-0a6c-4e8b-a24d-1dd860bf719f` |
 
 ---
 
@@ -44,7 +44,7 @@ These are GPT partition GUIDs used in rEFInd `volume` directives:
           ▼                                   ▼
 ┌─────────────────────┐           ┌─────────────────────────────────┐
 │ Boot0003: rEFInd    │           │ Boot0000: "Windows Boot Manager" │
-│ (Arch ESP - p4)     │           │ (Windows ESP - p1)               │
+│ (Arch ESP - p5)     │           │ (Windows ESP - p1)               │
 │                     │           │                                  │
 │ /EFI/refind/        │           │ BUT: bootmgfw.efi IS rEFInd!     │
 │   refind_x64.efi    │           │ (Windows shim protection)        │
@@ -235,7 +235,7 @@ sudo umount /mnt
         └── refind-gruvbox-theme/
 ```
 
-### Arch ESP (`/dev/nvme0n1p4` mounted at `/boot`)
+### Arch ESP (`/dev/nvme0n1p5` mounted at `/boot`)
 ```
 /boot/
 ├── vmlinuz-linux                # Linux kernel
@@ -259,7 +259,7 @@ sudo umount /mnt
 
 ```
 Boot0000* Windows Boot Manager  → nvme0n1p1:/EFI/Microsoft/Boot/bootmgfw.efi (IS rEFInd)
-Boot0003* rEFInd Boot Manager   → nvme0n1p4:/EFI/refind/refind_x64.efi
+Boot0003* rEFInd Boot Manager   → nvme0n1p5:/EFI/refind/refind_x64.efi
 Boot2001* EFI USB Device
 Boot2002* EFI DVD/CDROM
 Boot2003* EFI Network
