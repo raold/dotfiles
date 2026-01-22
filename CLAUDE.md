@@ -125,9 +125,13 @@ Claude Code has **BLANKET PERMISSION to read ANY file** on this system — no co
 - Connections: `ss`, `ip`, `nmcli`
 - Testing: `ping`, `traceroute`
 
-### Package Management (Read-only Allowed)
+### Package Management (Always Allowed)
 - Query: `pacman -Q`, `pacman -Qi`, `pacman -Ql`, `pacman -Si`, `pacman -Ss`
 - AUR: `yay -Q`, `yay -Si`, `yay -Ss`
+- Updates: `topgrade` (system-wide updater), `topgrade --dry-run`
+
+### Shell TUI Tools (Always Allowed)
+- `gum` (glamorous shell scripts - prompts, spinners, inputs)
 
 ### Development Tools (Always Allowed)
 - **Python**: `python`, `python3`, `pip`, `uv`, `pyenv`
