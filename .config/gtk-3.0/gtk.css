@@ -1,0 +1,29 @@
+/* Fix black background on system tray icons (nm-applet, etc.)
+ * This overrides GTK's default StatusNotifierItem background rendering
+ * which can cause black squares behind tray icons in polybar.
+ */
+
+/* Target all system tray icon backgrounds */
+.system-tray-icon,
+.sni-icon,
+statusnotifier,
+.statusnotifier,
+#StatusNotifierHost,
+.StatusNotifierHost {
+    background-color: transparent;
+    background: transparent;
+}
+
+/* Also target the actual indicator host widgets */
+box.sni-container,
+widget.sni-container {
+    background-color: transparent;
+    background: transparent;
+}
+
+/* nm-applet specific (uses ayatana-indicator protocol) */
+.nm-applet,
+#nm-applet {
+    background-color: transparent;
+    background: transparent;
+}

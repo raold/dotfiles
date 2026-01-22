@@ -30,6 +30,11 @@ set $exit_cmd i3-msg exit
 exec --no-startup-id dex --autostart --environment i3
 
 # ─────────────────────────────────────────────────
+# GTK Theme Setup (ensure icon theme is set before tray applets)
+# ─────────────────────────────────────────────────
+exec --no-startup-id gsettings set org.gnome.desktop.interface icon-theme "Gruvbox-Plus-Dark"
+
+# ─────────────────────────────────────────────────
 # System Tray Applets
 # ─────────────────────────────────────────────────
 exec --no-startup-id nm-applet --indicator
