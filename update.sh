@@ -105,11 +105,15 @@ LOCAL_BIN_SCRIPTS=(
     "diss-lint"
     "diss-figures"
     "diss-chapter"
+    # Startpage scripts (added 2026-01-24)
+    "startpage-stats.sh"
+    "startpage-ping.sh"
 )
 
 # .local/share directories to sync
 LOCAL_SHARE_DIRS=(
     "icc"  # ICC color profiles (Framework display calibration)
+    "startpage"  # Custom browser startpage (added 2026-01-24)
 )
 
 # Boot configuration files (requires sudo)
