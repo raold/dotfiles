@@ -27,7 +27,7 @@
     "modules-right": [
         "pulseaudio",
         "backlight",
-        "battery",
+        "custom/battery",
         "custom/clock",
         "custom/dunst",
         "custom/bluetooth",
@@ -67,7 +67,7 @@
 
     "cpu": {
         "format": " {usage}%",
-        "interval": 5,
+        "interval": 1,
         "tooltip": true,
         "on-click": "kitty -e btop"
     },
@@ -76,6 +76,7 @@
         "hwmon-path-abs": "/sys/devices/platform/FRMWC004:00/cros-ec-dev.1.auto/cros-ec-hwmon.9.auto/hwmon",
         "input-filename": "temp2_input",
         "critical-threshold": 80,
+        "interval": 2,
         "format": "󰔏 {temperatureC}°C",
         "interval": 10,
         "on-click": "kitty -e btop"
@@ -111,7 +112,7 @@
         "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n {bandwidthDownBits}  {bandwidthUpBits}",
         "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}",
         "on-click": "nm-connection-editor",
-        "interval": 5
+        "interval": 1
     },
 
     "pulseaudio": {
@@ -132,18 +133,11 @@
         "on-scroll-down": "brightnessctl set 5%-"
     },
 
-    "battery": {
-        "states": {
-            "good": 95,
-            "warning": 30,
-            "critical": 15
-        },
-        "format": "󰁹 {capacity}% {power:.1f}W",
-        "format-charging": "󰂄 {capacity}% {power:.1f}W",
-        "format-plugged": "󰚥 {capacity}%",
-        "format-not-charging": "󰚥 {capacity}%",
-        "format-alt": "󰁹 {time}",
-        "tooltip-format": "{timeTo}\n{power:.1f}W"
+    "custom/battery": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/battery-waybar.sh",
+        "interval": 5
     },
 
     "custom/clock": {

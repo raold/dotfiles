@@ -21,7 +21,7 @@ include ~/.config/wm-common/window-rules.conf
 tiling_drag modifier titlebar
 
 # WM-specific command variables (used in shared keybindings)
-set $launcher_cmd ~/.config/polybar/hack/scripts/launcher.sh
+set $launcher_cmd ~/.config/polybar/pills/scripts/launcher.sh
 set $screenshot_cmd flameshot gui
 set $lock_cmd betterlockscreen -l
 set $clipboard_cmd rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
@@ -66,7 +66,7 @@ exec --no-startup-id sleep 2 && feh --bg-fill ~/Pictures/Gruvbox-Archlinux2/Ligh
 # ─────────────────────────────────────────────────
 # Bar (polybar)
 # ─────────────────────────────────────────────────
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh --hack
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh --pills
 
 # ─────────────────────────────────────────────────
 # Scratchpad Terminals (X11-specific instances)

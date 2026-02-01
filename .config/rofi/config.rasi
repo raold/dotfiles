@@ -181,5 +181,5 @@ configuration {
 }
 //@theme "/usr/share/rofi/themes/lb.rasi"
 //@theme "/usr/share/rofi/themes/c64.rasi"
-//@theme "/usr/share/rofi/themes/gruvbox-dark-soft.rasi"
-@theme "/usr/share/rofi/themes/gruvbox-light-soft.rasi"
+//@theme "/usr/share/rofi/themes/gruvbox-light-soft.rasi"
+@theme "~/.config/rofi/gruvbox-pills.rasi"

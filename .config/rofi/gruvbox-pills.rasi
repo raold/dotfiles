@@ -1,0 +1,160 @@
+/* Gruvbox Material Dark — Pills theme for rofi
+ * Matches waybar pills aesthetic: rounded, transparent, frosted glass
+ */
+
+* {
+    font: "CaskaydiaCove Nerd Font 14";
+
+    /* Gruvbox Material Dark */
+    bg0:        rgba(40, 40, 40, 0.85);
+    bg1:        rgba(50, 48, 47, 0.9);
+    bg-pill:    rgba(80, 73, 69, 0.8);
+    bg-select:  rgba(231, 138, 78, 0.3);
+    fg0:        #d4be98;
+    fg-dim:     #a89984;
+    orange:     #e78a4e;
+    green:      #a9b665;
+    red:        #ea6962;
+    blue:       #7daea3;
+    yellow:     #d8a657;
+    aqua:       #89b482;
+
+    background-color: transparent;
+    text-color:       @fg0;
+}
+
+window {
+    background-color: @bg0;
+    border:           2px solid;
+    border-color:     @bg-pill;
+    border-radius:    12px;
+    width:            550px;
+    padding:          12px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          12px;
+}
+
+inputbar {
+    background-color: @bg-pill;
+    border-radius:    16px;
+    padding:          8px 16px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @orange;
+    font:             "CaskaydiaCove Nerd Font Bold 14";
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @fg0;
+    placeholder:      "Search...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    background-color: transparent;
+    columns:          1;
+    lines:            8;
+    spacing:          4px;
+    scrollbar:        false;
+    fixed-height:     true;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    8px;
+    padding:          8px 12px;
+    spacing:          8px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg0;
+}
+
+element normal.urgent {
+    background-color: transparent;
+    text-color:       @red;
+}
+
+element normal.active {
+    background-color: transparent;
+    text-color:       @green;
+}
+
+element selected.normal {
+    background-color: @bg-select;
+    text-color:       @orange;
+}
+
+element selected.urgent {
+    background-color: rgba(234, 105, 98, 0.3);
+    text-color:       @red;
+}
+
+element selected.active {
+    background-color: rgba(169, 182, 101, 0.3);
+    text-color:       @green;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @fg0;
+}
+
+element alternate.urgent {
+    background-color: transparent;
+    text-color:       @red;
+}
+
+element alternate.active {
+    background-color: transparent;
+    text-color:       @green;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             24px;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    highlight:        bold underline;
+}
+
+message {
+    background-color: transparent;
+    border:           0;
+}
+
+textbox {
+    background-color: transparent;
+    text-color:       @fg-dim;
+    padding:          4px 8px;
+}
+
+mode-switcher {
+    background-color: transparent;
+    spacing:          4px;
+    border:           0;
+}
+
+button {
+    background-color: @bg-pill;
+    text-color:       @fg-dim;
+    border-radius:    16px;
+    padding:          6px 12px;
+}
+
+button selected {
+    background-color: @bg-select;
+    text-color:       @orange;
+}

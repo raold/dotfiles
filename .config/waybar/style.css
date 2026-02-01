@@ -200,7 +200,7 @@ tooltip label {
 }
 
 /* ── Power pill (solo): [battery] ────────────────── */
-#battery {
+#custom-battery {
     background-color: rgba(80, 73, 69, 0.8);
     color: #e78a4e;
     border-radius: 16px;
@@ -208,15 +208,20 @@ tooltip label {
     padding: 0 12px;
 }
 
-#battery.charging {
+#custom-battery.charging {
     color: #a9b665;
 }
 
-#battery.warning:not(.charging) {
+#custom-battery.plugged,
+#custom-battery.full {
+    color: #a9b665;
+}
+
+#custom-battery.warning {
     color: #d8a657;
 }
 
-#battery.critical:not(.charging) {
+#custom-battery.critical {
     background-color: rgba(234, 105, 98, 0.3);
     color: #ea6962;
     animation: blink 0.5s linear infinite alternate;

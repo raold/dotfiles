@@ -1,0 +1,30 @@
+/* Confirm Dialog — Gruvbox Material Dark Pills theme */
+
+* {
+    font: "CaskaydiaCove Nerd Font 14";
+
+    bg0:        rgba(40, 40, 40, 0.9);
+    bg-pill:    rgba(80, 73, 69, 0.8);
+    fg0:        #d4be98;
+    orange:     #e78a4e;
+
+    background-color: transparent;
+    text-color:       @fg0;
+}
+
+window {
+    background-color: @bg0;
+    border:           2px solid;
+    border-color:     @bg-pill;
+    border-radius:    12px;
+    width:            250px;
+    padding:          20px;
+    location:         center;
+    y-offset:         -2em;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @orange;
+    expand:           true;
+}
