@@ -65,7 +65,8 @@
     },
 
     "temperature": {
-        "thermal-zone": 0,
+        "hwmon-path-abs": "/sys/devices/platform/FRMWC004:00/cros-ec-dev.1.auto/cros-ec-hwmon.9.auto/hwmon",
+        "input-filename": "temp2_input",
         "critical-threshold": 80,
         "format": "{icon} {temperatureC}°C",
         "format-icons": ["", "", ""],

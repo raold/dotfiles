@@ -87,18 +87,64 @@ EOF
     log_ok "Workspaces generated: $output"
 }
 
-show_keybinding_note() {
-    log_info "Note: Hyprland keybindings are manually maintained in:"
-    echo "  $HYPR_DIR/keybindings.conf"
-    echo ""
-    echo "Key differences from i3/Sway:"
-    echo "  - bindsym \$mod+X action  ->  bind = \$mod, X, action"
-    echo "  - focus left/right/up/down  ->  movefocus, l/r/u/d"
-    echo "  - move left/right/up/down   ->  movewindow, l/r/u/d"
-    echo "  - mode \"resize\"           ->  submap = resize"
-    echo ""
-    echo "If you add new keybindings to wm-common/keybindings.conf,"
-    echo "you must manually add them to hypr/keybindings.conf as well."
+validate_keybindings() {
+    log_info "Validating Hyprland keybindings against wm-common..."
+
+    local wm_keys hypr_keys
+    local wm_sources="$WM_COMMON/keybindings.conf $WM_COMMON/modes.conf $WM_COMMON/window-rules.conf"
+    local hypr_source="$HYPR_DIR/keybindings.conf"
+
+    # Known intentional differences (Hyprland architecture)
+    local -a intentional_skip=(
+        'mod+a'          # focus parent — not in dwindle
+        'mod+Shift+r'    # restart — Hyprland hot-reloads
+    )
+
+    # Extract $mod+key bindings from wm-common (top-level only, not inside modes)
+    wm_keys=$(grep -h '^bindsym \$mod' $wm_sources 2>/dev/null \
+        | sed 's/bindsym //' \
+        | grep -oP '^\$mod\+\S+' \
+        | sed 's/\$mod+/mod+/' \
+        | sort -u)
+
+    # Extract $mod bindings from Hyprland
+    hypr_keys=$(grep -E '^bind[m]? = \$mod' "$hypr_source" 2>/dev/null \
+        | sed 's/bind[m]\? = //' \
+        | sed 's/ //g' \
+        | grep -oP '^\$mod[^,]*,[^,]+' \
+        | sed 's/\$mod,/mod+/; s/\$modSHIFT,/mod+Shift+/' \
+        | sort -u)
+
+    local missing=0
+    while IFS= read -r key; do
+        # Normalize for comparison
+        local normalized=$(echo "$key" | tr '[:upper:]' '[:lower:]')
+
+        # Check intentional skips
+        local skip=false
+        for s in "${intentional_skip[@]}"; do
+            if [[ "$normalized" == "$(echo "$s" | tr '[:upper:]' '[:lower:]')" ]]; then
+                skip=true
+                break
+            fi
+        done
+        $skip && continue
+
+        # Check if key exists in Hyprland (case-insensitive)
+        if ! echo "$hypr_keys" | tr '[:upper:]' '[:lower:]' | grep -qF "$normalized"; then
+            if [[ $missing -eq 0 ]]; then
+                log_warn "Keybindings in wm-common but NOT in Hyprland:"
+            fi
+            echo "  ⚠ $key"
+            ((missing++))
+        fi
+    done <<< "$wm_keys"
+
+    if [[ $missing -eq 0 ]]; then
+        log_ok "All wm-common keybindings accounted for in Hyprland"
+    else
+        log_warn "$missing keybinding(s) may need manual translation"
+    fi
 }
 
 main() {
@@ -114,7 +160,7 @@ main() {
 
     translate_colors
     translate_workspaces
-    show_keybinding_note
+    validate_keybindings
 
     log_ok "Hyprland translation complete!"
 }
