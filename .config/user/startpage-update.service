@@ -1,0 +1,6 @@
+[Unit]
+Description=Update startpage system stats and service status
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '%h/.local/bin/startpage-stats.sh && %h/.local/bin/startpage-ping.sh'

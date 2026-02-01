@@ -1,0 +1,45 @@
+{
+  "search": {
+    "engine": "brave",
+    "url": "https://search.brave.com/search?q=",
+    "placeholder": "Search with Brave..."
+  },
+  "links": [
+    {
+      "category": "Work",
+      "items": [
+        {"name": "GitHub", "url": "https://github.com"},
+        {"name": "Stack Overflow", "url": "https://stackoverflow.com"},
+        {"name": "Claude", "url": "https://claude.ai"}
+      ]
+    },
+    {
+      "category": "Media",
+      "items": [
+        {"name": "YouTube", "url": "https://youtube.com"},
+        {"name": "Reddit", "url": "https://reddit.com"},
+        {"name": "Hacker News", "url": "https://news.ycombinator.com"}
+      ]
+    },
+    {
+      "category": "Reference",
+      "items": [
+        {"name": "Arch Wiki", "url": "https://wiki.archlinux.org"},
+        {"name": "MDN Web Docs", "url": "https://developer.mozilla.org"},
+        {"name": "DevDocs", "url": "https://devdocs.io"}
+      ]
+    },
+    {
+      "category": "Tools",
+      "items": [
+        {"name": "Regex101", "url": "https://regex101.com"},
+        {"name": "JSON Formatter", "url": "https://jsonformatter.org"},
+        {"name": "Excalidraw", "url": "https://excalidraw.com"}
+      ]
+    }
+  ],
+  "services": [
+    {"name": "Oldham Dentistry", "url": "https://oldhamdentistry.com"},
+    {"name": "Oldham.io", "url": "https://oldham.io"}
+  ]
+}

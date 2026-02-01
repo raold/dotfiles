@@ -19,3 +19,16 @@
 	navigate = true
 	line-numbers = true
 	side-by-side = false
+
+[alias]
+	st = status -sb
+	co = checkout
+	br = branch -vv
+	cm = commit -m
+	ca = commit --amend --no-edit
+	unstage = reset HEAD --
+	undo = reset --soft HEAD~1
+	lg = log --graph --oneline --all --decorate -20
+	last = log -1 HEAD --stat
+	staged = diff --cached
+	sync = fetch --all --prune

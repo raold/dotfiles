@@ -8,6 +8,9 @@ plugins=(
     extract
     zsh-autosuggestions
     zsh-syntax-highlighting
+    copypath
+    copyfile
+    dirhistory
 )
 
 # Zsh options
@@ -32,6 +35,10 @@ alias powerst="upower -i /org/freedesktop/UPower/devices/battery_BAT1"
 alias wttr="bash ~/rice/bash-script-wttr/wttr lynchburg"
 alias dotfiles="cd ~/rice/dotfiles-repo && git status"
 alias nfl="cd ~/rice/nfl-analytics && git status"
+
+# Kitty kittens
+alias icat="kitty +kitten icat"
+alias kdiff="kitty +kitten diff"
 
 # Dissertation workflow
 export DISS_DIR="$HOME/rice/nfl-analytics/analysis/dissertation/main"

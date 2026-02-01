@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <div class="clock" id="clock"></div>
+            <div class="date" id="date"></div>
+        </header>
+
+        <section class="search-section">
+            <form class="search-form" id="search-form">
+                <input type="text" class="search-input" id="search-input" placeholder="Search with Brave..." autofocus>
+                <button type="submit" class="search-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </form>
+        </section>
+
+        <section class="stats-section" id="stats-section">
+            <div class="stat-card">
+                <span class="stat-label">CPU</span>
+                <span class="stat-value" id="cpu-stat">--</span>
+                <span class="stat-unit">%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">RAM</span>
+                <span class="stat-value" id="ram-stat">--</span>
+                <span class="stat-unit">%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Disk</span>
+                <span class="stat-value" id="disk-stat">--</span>
+                <span class="stat-unit">%</span>
+            </div>
+        </section>
+
+        <section class="links-section" id="links-section">
+            <!-- Links populated by JavaScript -->
+        </section>
+
+        <section class="services-section" id="services-section">
+            <h2 class="section-title">Services</h2>
+            <div class="services-grid" id="services-grid">
+                <!-- Services populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

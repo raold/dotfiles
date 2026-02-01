@@ -137,6 +137,9 @@ SYSTEM_CONFIGS=(
     "/etc/pacman.d/hooks/refresh-keyring.hook"
     # Added 2026-01-16 (captive portal fix)
     "/etc/NetworkManager/conf.d/20-connectivity.conf"
+    # Added 2026-02-01 (RAM optimizations)
+    "/etc/systemd/zram-generator.conf"
+    "/etc/sysctl.d/99-ram-optimizations.conf"
 )
 
 collect_dotfiles() {
@@ -231,6 +234,7 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/logind.conf.d"
     mkdir -p "$DOTFILES_DIR/system-configs/udev.rules.d"
     mkdir -p "$DOTFILES_DIR/system-configs/scx_loader"
+    mkdir -p "$DOTFILES_DIR/system-configs/sysctl.d"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -276,6 +280,14 @@ collect_dotfiles() {
                     mkdir -p "$DOTFILES_DIR/system-configs/pacman.d/hooks"
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
+                    ;;
+                */sysctl.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/sysctl.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/sysctl.d/$filename"
+                    ;;
+                */zram-generator.conf)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
                     ;;
             esac
             echo -e "${GREEN}  Collected: system-configs/.../$filename${NC}"
@@ -412,6 +424,12 @@ install_system() {
                 ;;
             */pacman.d/hooks/*)
                 src="$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"
+                ;;
+            */sysctl.d/*)
+                src="$DOTFILES_DIR/system-configs/sysctl.d/$filename"
+                ;;
+            */zram-generator.conf)
+                src="$DOTFILES_DIR/system-configs/$filename"
                 ;;
         esac
         if [[ -f "$src" ]]; then
