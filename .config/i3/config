@@ -17,6 +17,9 @@ include ~/.config/wm-common/window-rules.conf
 # X11-SPECIFIC SETTINGS (i3 only)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Tiling drag (i3 syntax: modifier, titlebar, or both)
+tiling_drag modifier titlebar
+
 # WM-specific command variables (used in shared keybindings)
 set $launcher_cmd ~/.config/polybar/hack/scripts/launcher.sh
 set $screenshot_cmd flameshot gui

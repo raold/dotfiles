@@ -17,6 +17,9 @@ include ~/.config/wm-common/window-rules.conf
 # WAYLAND-SPECIFIC SETTINGS (Sway only)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Tiling drag (Sway syntax: enable/disable/toggle)
+tiling_drag enable
+
 # WM-specific command variables (used in shared keybindings)
 set $launcher_cmd rofi -show drun
 set $screenshot_cmd grim -g "$(slurp)" - | wl-copy
