@@ -389,14 +389,27 @@
       "WebFetch",
       "Task",
       "WebSearch",
-      "AskUserQuestion"
-    ],
-    "deny": [],
-    "ask": [
+      "AskUserQuestion",
       "Write",
       "Edit"
     ],
-    "defaultMode": "acceptEdits"
+    "deny": [],
+    "ask": [],
+    "defaultMode": "bypassPermissions"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/dro/.local/bin/claude-backup",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   },
   "attribution": {
     "commit": "",

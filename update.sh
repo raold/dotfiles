@@ -140,6 +140,9 @@ SYSTEM_CONFIGS=(
     # Added 2026-02-01 (RAM optimizations)
     "/etc/systemd/zram-generator.conf"
     "/etc/sysctl.d/99-ram-optimizations.conf"
+    # Added 2026-02-01 (display tear-free + dmesg access)
+    "/etc/X11/xorg.conf.d/20-amdgpu.conf"
+    "/etc/sysctl.d/99-dmesg.conf"
 )
 
 collect_dotfiles() {
@@ -235,6 +238,7 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/udev.rules.d"
     mkdir -p "$DOTFILES_DIR/system-configs/scx_loader"
     mkdir -p "$DOTFILES_DIR/system-configs/sysctl.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/xorg.conf.d"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -284,6 +288,10 @@ collect_dotfiles() {
                 */sysctl.d/*)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/sysctl.d/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/sysctl.d/$filename"
+                    ;;
+                */xorg.conf.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
                     ;;
                 */zram-generator.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
@@ -427,6 +435,9 @@ install_system() {
                 ;;
             */sysctl.d/*)
                 src="$DOTFILES_DIR/system-configs/sysctl.d/$filename"
+                ;;
+            */xorg.conf.d/*)
+                src="$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
                 ;;
             */zram-generator.conf)
                 src="$DOTFILES_DIR/system-configs/$filename"
