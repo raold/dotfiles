@@ -70,13 +70,38 @@ gpiolib_acpi.ignore_interrupt=AMDI0030:00@18  # Framework-specific GPIO interrup
 
 ## Permissions
 
-Claude Code has **BLANKET PERMISSION to read ANY file** on this system — no confirmation needed, ever. This applies to:
-- `cat`, `bat`, `head`, `tail`, `less`, `more` (all arguments)
-- `Read` tool (built-in)
-- `sudo cat /etc/*`, `sudo cat /boot/*` (system configs)
-- Any file path, any directory
+### Autonomous Mode (Full Bypass)
 
-**NEVER prompt for read operations.** If Claude Code prompts for `cat` or `bat`, this is a bug — the user has pre-authorized all reads.
+Claude Code runs in **`bypassPermissions`** mode — **ALL tools are allowed without prompts**, including `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash`, and all others. The `"ask"` list is empty.
+
+**NEVER prompt for ANY operation** — reads, writes, edits, bash commands. Everything is pre-authorized.
+
+### Auto-Backup Hook (Safety Net)
+
+A `PreToolUse` hook automatically backs up files before every `Edit` and `Write` operation:
+- **Hook script**: `~/.local/bin/claude-backup`
+- **Backup location**: `~/.claude/backups/`
+- **Format**: `<safe_filename>.<YYYYMMDD-HHMMSS>` with history log at `.history`
+- **Configured in**: `~/.claude/settings.json` → `hooks.PreToolUse`
+
+**Undo any change** with `~/.local/bin/claude-undo`:
+```bash
+claude-undo              # Interactive picker (uses fzf)
+claude-undo last         # Undo the most recent edit
+claude-undo last 3       # Undo the last 3 edits
+claude-undo list         # Show all backups
+claude-undo search foo   # Find backups by filename
+claude-undo clean 7      # Delete backups older than 7 days
+```
+
+### Settings Hierarchy
+
+Settings merge across 3 levels (project overrides global):
+1. **`~/.claude/settings.json`** — global (autonomous mode, hooks, all tool permissions)
+2. **`<project>/.claude/settings.json`** — project-level (checked into git)
+3. **`<project>/.claude/settings.local.json`** — project-local (gitignored)
+
+### General Preferences
 
 **PREFERENCE**: Use modern tools when available (rg over grep, fd over find, bat over cat, eza over ls).
 **PREFERENCE**: Built-in `Read` tool is faster than Bash cat and provides line numbers.
