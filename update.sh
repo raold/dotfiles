@@ -143,6 +143,10 @@ SYSTEM_CONFIGS=(
     # Added 2026-02-01 (display tear-free + dmesg access)
     "/etc/X11/xorg.conf.d/20-amdgpu.conf"
     "/etc/sysctl.d/99-dmesg.conf"
+    # Added 2026-02-01 (logging system audit fixes)
+    "/etc/systemd/journald.conf.d/size.conf"
+    "/etc/logrotate.conf"
+    "/etc/logrotate.d/pacman"
 )
 
 collect_dotfiles() {
@@ -239,6 +243,8 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/scx_loader"
     mkdir -p "$DOTFILES_DIR/system-configs/sysctl.d"
     mkdir -p "$DOTFILES_DIR/system-configs/xorg.conf.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/journald.conf.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/logrotate.d"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -292,6 +298,18 @@ collect_dotfiles() {
                 */xorg.conf.d/*)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
+                    ;;
+                */journald.conf.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/journald.conf.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/journald.conf.d/$filename"
+                    ;;
+                */logrotate.d/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/logrotate.d/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/logrotate.d/$filename"
+                    ;;
+                */logrotate.conf)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
                     ;;
                 */zram-generator.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
@@ -438,6 +456,15 @@ install_system() {
                 ;;
             */xorg.conf.d/*)
                 src="$DOTFILES_DIR/system-configs/xorg.conf.d/$filename"
+                ;;
+            */journald.conf.d/*)
+                src="$DOTFILES_DIR/system-configs/journald.conf.d/$filename"
+                ;;
+            */logrotate.d/*)
+                src="$DOTFILES_DIR/system-configs/logrotate.d/$filename"
+                ;;
+            */logrotate.conf)
+                src="$DOTFILES_DIR/system-configs/$filename"
                 ;;
             */zram-generator.conf)
                 src="$DOTFILES_DIR/system-configs/$filename"
