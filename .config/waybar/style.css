@@ -15,7 +15,7 @@
 
 * {
     font-family: "CaskaydiaCove NF", "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
-    font-size: 13px;
+    font-size: 15px;
     min-height: 0;
 }
 
@@ -177,25 +177,26 @@ tooltip label {
     color: #ea6962;
 }
 
-/* ── Audio pill: [pulseaudio | backlight] ────────── */
+/* ── Volume pill (solo) ──────────────────────────── */
 #pulseaudio {
     background-color: rgba(60, 56, 54, 0.8);
     color: #d8a657;
-    border-radius: 16px 0 0 16px;
-    margin: 4px 0 4px 3px;
-    padding: 0 6px 0 12px;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
 }
 
 #pulseaudio.muted {
     color: #928374;
 }
 
+/* ── Backlight pill (solo) ───────────────────────── */
 #backlight {
-    background-color: rgba(60, 56, 54, 0.8);
+    background-color: rgba(80, 73, 69, 0.8);
     color: #d8a657;
-    border-radius: 0 16px 16px 0;
-    margin: 4px 3px 4px 0;
-    padding: 0 12px 0 6px;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
 }
 
 /* ── Power pill (solo): [battery] ────────────────── */
@@ -228,7 +229,7 @@ tooltip label {
 }
 
 /* ── Time pill (solo): [clock] ───────────────────── */
-#clock {
+#custom-clock {
     background-color: rgba(60, 56, 54, 0.8);
     color: #a9b665;
     border-radius: 16px;

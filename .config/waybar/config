@@ -15,19 +15,20 @@
         "custom/spotify"
     ],
 
-    "modules-center": [],
-
-    "modules-right": [
+    "modules-center": [
         "cpu",
         "temperature",
         "memory",
         "disk",
         "custom/updates",
-        "network",
+        "network"
+    ],
+
+    "modules-right": [
         "pulseaudio",
         "backlight",
         "battery",
-        "clock",
+        "custom/clock",
         "custom/dunst",
         "custom/bluetooth",
         "tray"
@@ -65,7 +66,7 @@
     },
 
     "cpu": {
-        "format": " {usage}%",
+        "format": " {usage}%",
         "interval": 5,
         "tooltip": true,
         "on-click": "kitty -e btop"
@@ -75,14 +76,13 @@
         "hwmon-path-abs": "/sys/devices/platform/FRMWC004:00/cros-ec-dev.1.auto/cros-ec-hwmon.9.auto/hwmon",
         "input-filename": "temp2_input",
         "critical-threshold": 80,
-        "format": "{icon} {temperatureC}°C",
-        "format-icons": ["", "", ""],
+        "format": "󰔏 {temperatureC}°C",
         "interval": 10,
         "on-click": "kitty -e btop"
     },
 
     "memory": {
-        "format": " {used:0.1f}G",
+        "format": " {used:0.1f}G",
         "interval": 5,
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G ({percentage}%)",
         "on-click": "kitty -e btop"
@@ -90,7 +90,7 @@
 
     "disk": {
         "path": "/",
-        "format": " {free}",
+        "format": "󰋊 {free}",
         "interval": 30,
         "tooltip-format": "{path}: {used}/{total} ({percentage_used}%)"
     },
@@ -105,7 +105,7 @@
     },
 
     "network": {
-        "format-wifi": " {bandwidthDownBytes}  {bandwidthUpBytes}",
+        "format-wifi": "󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
         "format-ethernet": " {ipaddr}",
         "format-disconnected": "⚠ Disconnected",
         "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n {bandwidthDownBits}  {bandwidthUpBits}",
@@ -116,24 +116,18 @@
 
     "pulseaudio": {
         "format": "{icon} {volume}%",
-        "format-bluetooth": " {volume}%",
-        "format-muted": " Muted",
+        "format-bluetooth": "󰂯 {volume}%",
+        "format-muted": "󰝟 Muted",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
+            "headphone": "󰋋",
+            "default": ["󰕿", "󰖀", "󰕾"]
         },
         "on-click": "pavucontrol",
         "on-click-right": "pamixer --toggle-mute"
     },
 
     "backlight": {
-        "format": "{icon} {percent}%",
-        "format-icons": ["", "", "", "", "", "", "", "", ""],
+        "format": "󰳲 {percent}%",
         "on-scroll-up": "brightnessctl set +5%",
         "on-scroll-down": "brightnessctl set 5%-"
     },
@@ -144,18 +138,20 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "{icon} {capacity}% {power:.1f}W",
-        "format-charging": " {capacity}% {power:.1f}W",
-        "format-plugged": " {capacity}%",
-        "format-alt": "{icon} {time}",
-        "format-icons": ["", "", "", "", ""],
+        "format": "󰁹 {capacity}% {power:.1f}W",
+        "format-charging": "󰂄 {capacity}% {power:.1f}W",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-not-charging": "󰚥 {capacity}%",
+        "format-alt": "󰁹 {time}",
         "tooltip-format": "{timeTo}\n{power:.1f}W"
     },
 
-    "clock": {
-        "format": " {:%H:%M}",
-        "format-alt": " {:%a, %d %b %Y}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    "custom/clock": {
+        "exec": "~/.config/waybar/scripts/clock-waybar.sh",
+        "return-type": "json",
+        "interval": 30,
+        "on-click": "~/.config/waybar/scripts/clock-waybar.sh --alt",
+        "tooltip": true
     },
 
     "custom/dunst": {
