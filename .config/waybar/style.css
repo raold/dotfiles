@@ -1,41 +1,76 @@
-/* Waybar Gruvbox Material Dark Theme */
-/* Matches polybar hack theme */
+/* Waybar Gruvbox Material Dark — Pills Theme
+ * Matches polybar hack pill aesthetic via native CSS.
+ * Color tokens from Gruvbox Material Dark palette.
+ */
+
+/* ── Color tokens (reference) ──────────────────────
+ * --pill:      rgba(80, 73, 69, 0.8)    #504945
+ * --pill-dark: rgba(60, 56, 54, 0.8)    #3c3836
+ * --blue:   #7daea3    --green:  #a9b665
+ * --yellow: #d8a657    --orange: #e78a4e
+ * --purple: #d3869b    --aqua:   #89b482
+ * --red:    #ea6962    --fg:     #d4be98
+ * --fg-dim: #a89984    --gray:   #928374
+ * ────────────────────────────────────────────────── */
 
 * {
-    font-family: "CaskaydiaCove NF", "JetBrainsMono Nerd Font", monospace;
+    font-family: "CaskaydiaCove NF", "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
     font-size: 13px;
     min-height: 0;
 }
 
+/* ── Floating bar — transparent so pills are islands ── */
 window#waybar {
-    background-color: rgba(50, 48, 47, 0.9);
+    background-color: transparent;
+    border: none;
     color: #d4be98;
-    border-bottom: 2px solid #32302f;
 }
 
 window#waybar.hidden {
     opacity: 0.2;
 }
 
-/* Workspaces */
+/* ── Tooltip ─────────────────────────────────────── */
+tooltip {
+    background-color: #32302f;
+    border: 1px solid #504945;
+    border-radius: 8px;
+}
+
+tooltip label {
+    color: #d4be98;
+}
+
+/* ══════════════════════════════════════════════════
+ * LEFT SIDE
+ * ══════════════════════════════════════════════════ */
+
+/* ── Workspaces pill ─────────────────────────────── */
+#workspaces {
+    background-color: rgba(80, 73, 69, 0.8);
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 2px;
+}
+
 #workspaces button {
     padding: 0 8px;
     background-color: transparent;
     color: #928374;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
+    border-radius: 12px;
+    border: none;
+    margin: 2px 1px;
 }
 
 #workspaces button:hover {
-    background-color: rgba(40, 40, 40, 0.4);
+    background-color: rgba(80, 73, 69, 0.6);
     color: #d4be98;
 }
 
 #workspaces button.focused,
 #workspaces button.active {
-    background-color: rgba(231, 138, 78, 0.2);
+    background-color: rgba(231, 138, 78, 0.3);
     color: #e78a4e;
-    border-bottom: 2px solid #e78a4e;
 }
 
 #workspaces button.urgent {
@@ -43,39 +78,135 @@ window#waybar.hidden {
     color: #ea6962;
 }
 
-/* Mode/Submap indicator */
+/* ── Mode / Submap pill ──────────────────────────── */
 #mode,
 #submap {
     background-color: #e78a4e;
     color: #282828;
-    padding: 0 10px;
+    border-radius: 16px;
+    padding: 0 12px;
+    margin: 4px 3px;
     font-weight: bold;
 }
 
-/* Clock */
-#clock {
-    padding: 0 10px;
-    color: #d4be98;
+/* ── Spotify pill ────────────────────────────────── */
+#custom-spotify {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #a9b665;
+    border-radius: 16px;
+    padding: 0 12px;
+    margin: 4px 3px;
 }
 
-/* System modules */
-#cpu,
-#memory,
-#temperature,
-#backlight,
-#battery,
-#pulseaudio,
-#network {
-    padding: 0 10px;
-    color: #d4be98;
+/* ══════════════════════════════════════════════════
+ * RIGHT SIDE — Pill Groups
+ * ══════════════════════════════════════════════════ */
+
+/* ── System HW pill: [cpu | temperature | memory] ── */
+#cpu {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #7daea3;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
 }
 
-/* Temperature warning */
+#temperature {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #7daea3;
+    border-radius: 0;
+    margin: 4px 0;
+    padding: 0 6px;
+}
+
 #temperature.critical {
     color: #ea6962;
 }
 
-/* Battery states */
+#memory {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #7daea3;
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
+}
+
+/* ── Storage pill: [disk | updates] ──────────────── */
+#disk {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #89b482;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
+}
+
+#custom-updates {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #89b482;
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
+}
+
+#custom-updates.updated {
+    color: #a9b665;
+}
+
+#custom-updates.few {
+    color: #d8a657;
+}
+
+#custom-updates.many {
+    color: #e78a4e;
+}
+
+#custom-updates.urgent {
+    color: #ea6962;
+}
+
+/* ── Network pill (solo) ─────────────────────────── */
+#network {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #d3869b;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
+}
+
+#network.disconnected {
+    color: #ea6962;
+}
+
+/* ── Audio pill: [pulseaudio | backlight] ────────── */
+#pulseaudio {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #d8a657;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
+}
+
+#pulseaudio.muted {
+    color: #928374;
+}
+
+#backlight {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #d8a657;
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
+}
+
+/* ── Power pill (solo): [battery] ────────────────── */
+#battery {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #e78a4e;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
+}
+
 #battery.charging {
     color: #a9b665;
 }
@@ -96,19 +227,50 @@ window#waybar.hidden {
     }
 }
 
-/* Pulseaudio muted */
-#pulseaudio.muted {
+/* ── Time pill (solo): [clock] ───────────────────── */
+#clock {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #a9b665;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
+}
+
+/* ── Dunst pill (solo, hidden when 0 waiting) ────── */
+#custom-dunst {
+    background-color: rgba(80, 73, 69, 0.8);
+    color: #d8a657;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
+}
+
+/* ── Controls pill: [bluetooth | tray] ───────────── */
+#custom-bluetooth {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #928374;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
+}
+
+#custom-bluetooth.on {
+    color: #7daea3;
+}
+
+#custom-bluetooth.connected {
+    color: #a9b665;
+}
+
+#custom-bluetooth.off {
     color: #928374;
 }
 
-/* Network disconnected */
-#network.disconnected {
-    color: #ea6962;
-}
-
-/* Tray */
 #tray {
-    padding: 0 10px;
+    background-color: rgba(60, 56, 54, 0.8);
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
 }
 
 #tray > .passive {
@@ -118,15 +280,4 @@ window#waybar.hidden {
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
     background-color: rgba(234, 105, 98, 0.3);
-}
-
-/* Tooltip */
-tooltip {
-    background-color: #32302f;
-    border: 1px solid #504945;
-    border-radius: 4px;
-}
-
-tooltip label {
-    color: #d4be98;
 }
