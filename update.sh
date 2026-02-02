@@ -105,6 +105,8 @@ LOCAL_BIN_SCRIPTS=(
     "diss-lint"
     "diss-figures"
     "diss-chapter"
+    # Hyprland helper scripts (added 2026-02-01)
+    "hypr-swap"
     # Startpage scripts (added 2026-01-24)
     "startpage-stats.sh"
     "startpage-ping.sh"

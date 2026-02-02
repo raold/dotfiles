@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Swap windows in Hyprland preserving exact pixel sizes.
+# Uses --batch for atomic execution (no timing drift).
+# Usage: hypr-swap <l|r|u|d>
+
+direction="$1"
+[[ -z "$direction" ]] && exit 1
+
+# Get active window address and size
+active=$(hyprctl activewindow -j)
+active_addr=$(echo "$active" | jq -r '.address')
+active_w=$(echo "$active" | jq '.size[0]')
+active_h=$(echo "$active" | jq '.size[1]')
+ws=$(echo "$active" | jq '.workspace.id')
+
+# Find the sibling window in the target direction
+# Get all tiled windows in the same workspace (excluding active)
+sibling=$(hyprctl clients -j | jq -r --argjson ws "$ws" --arg addr "$active_addr" \
+    '[.[] | select(.workspace.id == $ws and .address != $addr and .floating == false)] | .[0]')
+
+[[ "$sibling" == "null" || -z "$sibling" ]] && exit 0
+
+sib_addr=$(echo "$sibling" | jq -r '.address')
+sib_w=$(echo "$sibling" | jq '.size[0]')
+sib_h=$(echo "$sibling" | jq '.size[1]')
+
+# Atomic: swap then force both windows back to their original pixel sizes
+hyprctl --batch \
+    "dispatch swapwindow $direction ; \
+     dispatch resizewindowpixel exact ${active_w} ${active_h},address:${active_addr} ; \
+     dispatch resizewindowpixel exact ${sib_w} ${sib_h},address:${sib_addr}"
