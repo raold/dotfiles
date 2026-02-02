@@ -26,6 +26,7 @@ if [ "$AC_ONLINE" = "1" ]; then
     [ -f "$GPU_DPM" ] && echo "auto" > "$GPU_DPM" 2>/dev/null
 
     logger "power-switch: AC connected - performance mode (SMT on, boost on, GPU auto)"
+    sudo -u dro /home/dro/.local/bin/hyprland-power-switch ac &
 else
     # ========== BATTERY - BALANCED MODE ==========
     # Set platform profile to balanced (not aggressive power-saver)
@@ -57,4 +58,5 @@ else
     /usr/bin/powertop --auto-tune &>/dev/null &
 
     logger "power-switch: Battery mode - balanced (SMT on, boost on, EPP balance_power)"
+    sudo -u dro /home/dro/.local/bin/hyprland-power-switch battery &
 fi

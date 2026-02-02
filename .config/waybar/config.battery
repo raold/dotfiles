@@ -1,0 +1,171 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "margin-top": 6,
+    "margin-left": 12,
+    "margin-right": 12,
+    "spacing": 0,
+
+    "modules-left": [
+        "sway/workspaces",
+        "hyprland/workspaces",
+        "sway/mode",
+        "hyprland/submap",
+        "custom/spotify"
+    ],
+
+    "modules-center": [
+        "cpu",
+        "temperature",
+        "memory",
+        "disk",
+        "custom/updates",
+        "network"
+    ],
+
+    "modules-right": [
+        "pulseaudio",
+        "backlight",
+        "custom/battery",
+        "custom/clock",
+        "custom/dunst",
+        "custom/bluetooth",
+        "tray"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "format": "{name}"
+    },
+
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate",
+        "sort-by-number": true
+    },
+
+    "sway/mode": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+
+    "hyprland/submap": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+
+    "custom/spotify": {
+        "format": " {}",
+        "max-length": 35,
+        "interval": 5,
+        "exec": "playerctl -p spotify metadata --format '{{artist}} - {{title}}' 2>/dev/null",
+        "exec-if": "pgrep spotify",
+        "on-click": "playerctl -p spotify play-pause",
+        "on-click-right": "playerctl -p spotify next",
+        "on-click-middle": "playerctl -p spotify previous"
+    },
+
+    "cpu": {
+        "format": " {usage}%",
+        "interval": 5,
+        "tooltip": true,
+        "on-click": "kitty -e btop"
+    },
+
+    "temperature": {
+        "hwmon-path-abs": "/sys/devices/platform/FRMWC004:00/cros-ec-dev.1.auto/cros-ec-hwmon.9.auto/hwmon",
+        "input-filename": "temp2_input",
+        "critical-threshold": 80,
+        "format": "󰔏 {temperatureC}°C",
+        "interval": 30,
+        "on-click": "kitty -e btop"
+    },
+
+    "memory": {
+        "format": " {used:0.1f}G",
+        "interval": 5,
+        "tooltip-format": "{used:0.1f}G / {total:0.1f}G ({percentage}%)",
+        "on-click": "kitty -e btop"
+    },
+
+    "disk": {
+        "path": "/",
+        "format": "󰋊 {free}",
+        "interval": 30,
+        "tooltip-format": "{path}: {used}/{total} ({percentage_used}%)"
+    },
+
+    "custom/updates": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/arch-update-waybar.sh",
+        "interval": 60,
+        "on-click": "kitty --hold -e arch-update",
+        "on-click-right": "arch-update --check"
+    },
+
+    "network": {
+        "format-wifi": "󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
+        "format-ethernet": " {ipaddr}",
+        "format-disconnected": "⚠ Disconnected",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n {bandwidthDownBits}  {bandwidthUpBits}",
+        "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}",
+        "on-click": "nm-connection-editor",
+        "interval": 5
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-bluetooth": "󰂯 {volume}%",
+        "format-muted": "󰝟 Muted",
+        "format-icons": {
+            "headphone": "󰋋",
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "on-click": "pavucontrol",
+        "on-click-right": "pamixer --toggle-mute"
+    },
+
+    "backlight": {
+        "format": "󰳲 {percent}%",
+        "on-scroll-up": "brightnessctl set +5%",
+        "on-scroll-down": "brightnessctl set 5%-"
+    },
+
+    "custom/battery": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/battery-waybar.sh",
+        "interval": 5
+    },
+
+    "custom/clock": {
+        "exec": "~/.config/waybar/scripts/clock-waybar.sh",
+        "return-type": "json",
+        "interval": 30,
+        "on-click": "~/.config/waybar/scripts/clock-waybar.sh --alt",
+        "tooltip": true
+    },
+
+    "custom/dunst": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "count=$(dunstctl count waiting 2>/dev/null || echo 0); if [ \"$count\" -gt 0 ]; then echo '{\"text\": \" '\"$count\"'\", \"tooltip\": \"'\"$count\"' notifications paused\", \"class\": \"waiting\"}'; else echo '{\"text\": \"\"}'; fi",
+        "interval": 5,
+        "on-click": "dunstctl set-paused toggle"
+    },
+
+    "custom/bluetooth": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/bluetooth-waybar.sh",
+        "interval": 5,
+        "on-click": "~/.config/waybar/scripts/bluetooth-waybar.sh --menu",
+        "on-click-right": "bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && bluetoothctl power off || (systemctl is-active bluetooth || sudo systemctl start bluetooth; bluetoothctl power on)"
+    },
+
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8
+    }
+}
