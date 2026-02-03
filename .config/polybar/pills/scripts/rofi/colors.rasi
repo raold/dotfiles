@@ -1,0 +1,9 @@
+/* colors - Gruvbox Material Dark */
+
+* {
+  al:    #00000000;
+  bg:    #282828FF;
+  ac:    #d79921FF;
+  se:    #d7992130;
+  fg:    #ebdbb2FF;
+}

@@ -16,7 +16,3 @@ export PATH="$PATH:/home/dro/.lmstudio/bin"
 export HSA_OVERRIDE_GFX_VERSION=11.0.0
 export ROCM_PATH=/opt/rocm
 export PYTORCH_ROCM_ARCH=gfx1103
-
-
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"

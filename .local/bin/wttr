@@ -125,7 +125,7 @@ else
         curl https://wttr.in/:help
     ;;
     "-i")
-        sudo apt install curl
+        sudo pacman -S curl
     ;;
     "-m")
         curl http://wttr.in/moon
