@@ -10,6 +10,7 @@ Personal dotfiles for **Arch Linux** on **Framework Laptop 13 AMD** with a tripl
 - **CachyOS Kernel**: znver4-optimized with EEVDF scheduler and sched-ext support
 - **Performance Tuned**: ADIOS I/O scheduler, scx_lavd, power-profiles-daemon
 - **Framework Optimized**: Proper S0i3 sleep, AMD P-State EPP, speaker EQ presets
+- **Display Manager**: greetd + ReGreet (GTK4 Wayland greeter)
 
 ## Window Managers
 
@@ -45,7 +46,9 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 - `.config/rofi/` - Application launcher
 - `.config/dunst/` - Notifications
 - `.config/picom/` - X11 compositor
-- `.config/gtk-3.0/` - GTK theme settings
+- `.config/gtk-3.0/` - GTK3 theme settings
+- `.config/gtk-4.0/` - GTK4 theme settings
+- `.config/fontconfig/` - Font rendering (macOS-style: hintslight, stem darkening)
 
 ### CLI Tools
 - `.config/btop/` - System monitor
@@ -56,7 +59,8 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 - `.config/git/` - Global gitignore
 
 ### Custom Scripts (`.local/bin/`)
-- `power-switch` - AC/battery power profile switching
+- `power-switch` - AC/battery power profile switching (systemd + udev triggered)
+- `hyprland-power-switch` - Hyprland compositor power optimization (blur, animations, waybar polling)
 - `battery-mode` - Aggressive battery optimization
 - `spotify-theme` - Spotify theme customizer
 - `update-mirrors` - Reflector + CachyOS mirror refresh
@@ -152,6 +156,8 @@ ln -s ~/rice/dotfiles-repo/.claude/settings.local.json ~/.claude/settings.local.
 
 ### Hyprland (Wayland)
 - hyprland, hyprpaper, hyprlock, hypridle
+- Fractional scaling at 1.175 (1920×1280 logical on 2256×1504 panel)
+- Dynamic power switching (blur/animations off on battery)
 - (shares waybar, grim, slurp with Sway)
 
 ### Framework 13 AMD
@@ -166,7 +172,9 @@ ln -s ~/rice/dotfiles-repo/.claude/settings.local.json ~/.claude/settings.local.
 - **GTK**: Gruvbox-Dark-B-LB
 - **Icons**: Gruvbox-Plus-Dark
 - **Cursor**: Bibata-Modern-Classic
-- **Font**: CaskaydiaCove Nerd Font
+- **UI Font**: Inter (macOS-style rendering with stem darkening)
+- **Terminal Font**: JetBrainsMono Nerd Font
+- **Font Rendering**: hintslight + no subpixel AA (optimized for HiDPI)
 
 ## Hardware
 
@@ -242,6 +250,17 @@ powerprofilesctl get  # balanced / power-saver / performance
 # Check CPU governor
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver  # amd-pstate-epp
 ```
+
+## Display Manager
+
+**greetd + ReGreet** — GTK4 Wayland greeter running inside cage (kiosk compositor).
+
+- Config: `/etc/greetd/config.toml`, `/etc/greetd/regreet.toml`
+- Theme: Gruvbox Material Dark CSS (`/etc/greetd/regreet.css`)
+- Wallpaper: `/usr/share/backgrounds/gruvbox/`
+- Fallback: `ly` TUI greeter (installed but disabled)
+
+See [CLAUDE.md](CLAUDE.md) for greetd configuration details and rollback instructions.
 
 ## Documentation
 
