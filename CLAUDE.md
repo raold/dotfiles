@@ -6,7 +6,7 @@ This file provides permanent context and permissions for Claude Code when workin
 
 - **Hardware**: Framework Laptop 13 AMD (Ryzen 7040 series, AMD Radeon 780M)
 - **OS**: Arch Linux with CachyOS kernel (`linux-cachyos`) — znver4 optimized
-- **Display Manager**: ly (TUI login manager)
+- **Display Manager**: greetd + ReGreet (GTK4 Wayland greeter via cage)
 - **Window Managers**: i3wm (X11), Sway (Wayland), Hyprland (Wayland) — synced configs
 - **Shell**: zsh with starship prompt
 - **Terminal**: kitty
@@ -30,6 +30,37 @@ Three WMs with **synchronized configurations** via `~/.config/wm-common/`:
 - `translate-hyprland.sh` — Regenerate Hyprland from wm-common
 
 See `~/rice/dotfiles-repo/WM-SETUP.md` for complete documentation.
+
+## Display Manager (greetd + ReGreet)
+
+**greetd** is the login daemon, **ReGreet** is the GTK4 greeter, hosted inside **cage** (minimal Wayland kiosk compositor).
+
+### Config Files
+| File | Purpose |
+|------|---------|
+| `/etc/greetd/config.toml` | greetd daemon config (launches `cage -s -mlast -- regreet`) |
+| `/etc/greetd/regreet.toml` | ReGreet settings (wallpaper, font, theme, clock) |
+| `/etc/greetd/regreet.css` | Gruvbox Material Dark CSS (colors from `wm-common/colors.conf`) |
+| `/etc/systemd/system/greetd.service.d/crash-limit.conf` | Limits restarts to 3/60s (prevents crash loops) |
+| `/usr/share/backgrounds/gruvbox/` | Login wallpapers (dark-archlinux2.png is active) |
+
+### Key Details
+- Runs on VT1, greeter process runs as `greeter` user (UID 944, in `video` group)
+- `cage -s` enables VT switching — Ctrl+Alt+F2 always reaches a TTY even if greeter crashes
+- Sessions auto-discovered from `/usr/share/xsessions/` and `/usr/share/wayland-sessions/`
+- Logs: `/var/log/regreet/log`, state: `/var/lib/regreet/`
+
+### Rollback
+```bash
+# If greetd fails (from TTY via Ctrl+Alt+F2):
+sudo systemctl disable greetd
+sudo systemctl enable lightdm   # lightdm + nody-greeter still installed
+sudo reboot
+```
+
+### History
+- **ly** → **lightdm + nody-greeter** → **greetd + ReGreet** (Feb 2026)
+- nody-greeter was orphaned on AUR; greetd + regreet are in official Arch repos
 
 ## Boot Architecture (IMPORTANT)
 
