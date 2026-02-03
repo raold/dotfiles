@@ -26,8 +26,8 @@ These are GPT partition GUIDs used in rEFInd `volume` directives:
 | Partition | PARTUUID |
 |-----------|----------|
 | `nvme0n1p1` (Windows ESP) | `dd13a825-93d3-4f79-bf42-3ab4ff82d5a0` |
-| `nvme0n1p5` (Arch ESP) | `639512fa-8c83-4f9c-9e43-8b9f32d0181d` |
-| `nvme0n1p7` (Arch root) | `c21470fe-0a6c-4e8b-a24d-1dd860bf719f` |
+| `nvme0n1p5` (Arch ESP)    | `639512fa-8c83-4f9c-9e43-8b9f32d0181d` |
+| `nvme0n1p7` (Arch root)   | `c21470fe-0a6c-4e8b-a24d-1dd860bf719f` |
 
 ---
 
@@ -35,20 +35,20 @@ These are GPT partition GUIDs used in rEFInd `volume` directives:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      UEFI Firmware                               │
+│                      UEFI Firmware                              │
 │  BootOrder: 0003 → 0000 → 2001 → 2002 → 2003                    │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
           ┌─────────────────┴─────────────────┐
           │                                   │
           ▼                                   ▼
-┌─────────────────────┐           ┌─────────────────────────────────┐
+┌─────────────────────┐           ┌──────────────────────────────────┐
 │ Boot0003: rEFInd    │           │ Boot0000: "Windows Boot Manager" │
 │ (Arch ESP - p5)     │           │ (Windows ESP - p1)               │
 │                     │           │                                  │
 │ /EFI/refind/        │           │ BUT: bootmgfw.efi IS rEFInd!     │
 │   refind_x64.efi    │           │ (Windows shim protection)        │
-└──────────┬──────────┘           └────────────────┬────────────────┘
+└──────────┬──────────┘           └────────────────┬─────────────────┘
            │                                       │
            └───────────────┬───────────────────────┘
                            │
