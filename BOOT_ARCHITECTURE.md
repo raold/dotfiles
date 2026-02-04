@@ -105,7 +105,7 @@ There are **two** rEFInd installations with separate configs:
 | Location | Config Path | Used When |
 |----------|-------------|-----------|
 | Windows ESP (p1) | `/EFI/refind/refind.conf` | Booting via Boot0000 (shim) |
-| Arch ESP (p4) | `/boot/EFI/refind/refind.conf` | Booting via Boot0003 (direct) |
+| Arch ESP (p5) | `/boot/EFI/refind/refind.conf` | Booting via Boot0003 (direct) |
 
 Both configs are now synchronized with identical menu entries.
 
@@ -123,9 +123,9 @@ scanfor manual          # Only use manual menu entries (no auto-detect)
 menuentry "Arch" {
     icon     /EFI/refind/themes/refind-gruvbox-theme/icons/os_arch.png
     volume   639512fa-8c83-4f9c-9e43-8b9f32d0181d
-    loader   /vmlinuz-linux
+    loader   /vmlinuz-linux-cachyos
     initrd   /amd-ucode.img
-    initrd   /initramfs-linux.img
+    initrd   /initramfs-linux-cachyos.img
     options  "root=UUID=c367a553-2673-40c2-87f3-7db256ef1447 zswap.enabled=0 rw rootfstype=ext4 ..."
 
     submenuentry "Boot using fallback initramfs" { ... }
@@ -162,7 +162,7 @@ Your Arch kernel boots with these parameters:
 | `pcie_aspm=force` | Force PCIe Active State Power Management |
 | `pcie_aspm.policy=powersupersave` | Maximum power saving |
 | `rtc_cmos.use_acpi_alarm=1` | ACPI alarm for RTC |
-| `amd_pmc.enable_stb=1` | AMD PMC Smart Trace Buffer |
+| `amd_pmc.enable_stb=0` | Disable AMD PMC Smart Trace Buffer (critical for S0i3 sleep) |
 | `gpiolib_acpi.ignore_interrupt=AMDI0030:00@18` | Fix GPIO interrupt issue |
 | `resume=UUID=... resume_offset=3989504` | Hibernation support |
 | `vt.default_*` | Gruvbox terminal colors |
@@ -200,7 +200,7 @@ If rEFInd is completely broken, boot directly to Arch kernel:
 
 1. Enter UEFI firmware (F2/Del at boot)
 2. Add boot entry pointing to: `\EFI\BOOT\BOOTX64.EFI` on Arch ESP
-3. Or use UEFI Shell to run: `fs0:\vmlinuz-linux root=UUID=c367a553-... initrd=\initramfs-linux.img`
+3. Or use UEFI Shell to run: `fs0:\vmlinuz-linux-cachyos root=UUID=c367a553-... initrd=\initramfs-linux-cachyos.img`
 
 ### Reinstall rEFInd
 
@@ -238,11 +238,12 @@ sudo umount /mnt
 ### Arch ESP (`/dev/nvme0n1p5` mounted at `/boot`)
 ```
 /boot/
-├── vmlinuz-linux                # Linux kernel
-├── initramfs-linux.img          # Initramfs
-├── initramfs-linux-fallback.img # Fallback initramfs
+├── vmlinuz-linux-cachyos         # CachyOS kernel (default)
+├── vmlinuz-linux-lts            # LTS kernel (fallback)
+├── initramfs-linux-cachyos.img  # CachyOS initramfs
+├── initramfs-linux-lts.img      # LTS initramfs
 ├── amd-ucode.img                # AMD microcode
-├── refind_linux.conf            # Auto-detect config (unused with manual)
+├── refind_linux.conf            # Kernel parameters (used with manual stanza)
 └── EFI/
     ├── BOOT/
     │   └── BOOTX64.EFI          # systemd-boot (not used)
@@ -280,7 +281,7 @@ Boot2003* EFI Network
 ## Maintenance Notes
 
 ### After Kernel Updates
-rEFInd auto-detects the kernel at `/boot/vmlinuz-linux` via the manual stanza. No action needed.
+The manual stanza hardcodes `/vmlinuz-linux-cachyos`. CachyOS kernel updates replace this file in-place, so no action needed. If switching kernels, update the `loader` line in `refind.conf`.
 
 ### After Windows Major Updates
 Check if boot order was reset:

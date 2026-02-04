@@ -107,9 +107,13 @@ LOCAL_BIN_SCRIPTS=(
     "diss-chapter"
     # Hyprland helper scripts (added 2026-02-01)
     "hypr-swap"
+    "hyprland-power-switch"
     # Startpage scripts (added 2026-01-24)
     "startpage-stats.sh"
     "startpage-ping.sh"
+    # Claude Code helper scripts (added 2026-02-04)
+    "claude-backup"
+    "claude-undo"
 )
 
 # .local/share directories to sync
@@ -132,6 +136,7 @@ SYSTEM_CONFIGS=(
     "/etc/systemd/logind.conf.d/lid-suspend-hibernate.conf"
     "/etc/mkinitcpio.conf"
     "/etc/udev/rules.d/60-ioschedulers.rules"
+    "/etc/udev/rules.d/85-power-switch.rules"
     "/etc/scx_loader/config.toml"
     # Added 2026-01-10
     "/etc/systemd/system/keyring-update.service"
@@ -455,7 +460,8 @@ install_system() {
                 src="$DOTFILES_DIR/system-configs/scx_loader/$filename"
                 ;;
             */systemd/system/*)
-                src="$DOTFILES_DIR/system-configs/systemd-system/$filename"
+                relpath="${filepath#/etc/systemd/system/}"
+                src="$DOTFILES_DIR/system-configs/systemd-system/$relpath"
                 ;;
             */pacman.d/hooks/*)
                 src="$DOTFILES_DIR/system-configs/pacman.d/hooks/$filename"

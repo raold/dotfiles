@@ -54,13 +54,16 @@ See `~/rice/dotfiles-repo/WM-SETUP.md` for complete documentation.
 ```bash
 # If greetd fails (from TTY via Ctrl+Alt+F2):
 sudo systemctl disable greetd
-sudo systemctl enable lightdm   # lightdm + nody-greeter still installed
+# lightdm was removed (Feb 2026) — reinstall if needed:
+# sudo pacman -S lightdm lightdm-gtk-greeter
+# sudo systemctl enable lightdm
 sudo reboot
 ```
 
 ### History
 - **ly** → **lightdm + nody-greeter** → **greetd + ReGreet** (Feb 2026)
 - nody-greeter was orphaned on AUR; greetd + regreet are in official Arch repos
+- lightdm + nody-greeter fully removed (Feb 2026) — greetd is the only DM installed
 
 ## Boot Architecture (IMPORTANT)
 
@@ -90,12 +93,14 @@ This system uses **rEFInd as the primary bootloader**, having **replaced the Win
 ### Kernel Parameters (Framework 13 AMD)
 These parameters are critical for proper power management:
 ```
-amd_pmc.enable_stb=0          # Disable Smart Trace Buffer (critical for S0i3 sleep)
-amdgpu.dcdebugmask=0x10       # Disable PSR (Panel Self Refresh) - prevents black screen on resume
-amdgpu.sg_display=0           # Disable scatter-gather display
-pcie_aspm=force               # Force PCIe Active State Power Management
+amd_pstate=active              # Enable AMD P-State EPP driver (required for amd-pstate-epp)
+zswap.enabled=0                # Disable zswap (using zram via cachyos-settings instead)
+amd_pmc.enable_stb=0           # Disable Smart Trace Buffer (critical for S0i3 sleep)
+amdgpu.dcdebugmask=0x10        # Disable PSR (Panel Self Refresh) - prevents black screen on resume
+amdgpu.sg_display=0            # Disable scatter-gather display
+pcie_aspm=force                # Force PCIe Active State Power Management
 pcie_aspm.policy=powersupersave
-rtc_cmos.use_acpi_alarm=1     # ACPI alarm for wake from hibernation
+rtc_cmos.use_acpi_alarm=1      # ACPI alarm for wake from hibernation
 gpiolib_acpi.ignore_interrupt=AMDI0030:00@18  # Framework-specific GPIO interrupt fix
 ```
 
@@ -134,19 +139,40 @@ Settings merge across 3 levels (project overrides global):
 
 ### General Preferences
 
-**PREFERENCE**: Use modern tools when available (rg over grep, fd over find, bat over cat, eza over ls).
+**PREFERENCE**: Always use modern tool alternatives over legacy ones:
+
+| Task | Use | Not |
+|------|-----|-----|
+| Search file contents | `rg` (ripgrep) | `grep` |
+| Find files | `fd` | `find` |
+| View files | `bat` | `cat` |
+| List dirs | `eza` | `ls` |
+| Grep + bat highlight | `batgrep` | `grep` |
+| Read man pages | `batman` | `man` |
+| View diffs | `batdiff` / `delta` | `diff` |
+| Pipe viewer | `batpipe` | `less` |
+| Watch files | `batwatch` | `watch` + `cat` |
+| Format code | `prettybat` | — |
+| Replace in files | `sd` | `sed` |
+| Disk usage | `dust` / `duf` | `du` / `df` |
+| Process list | `procs` | `ps` |
+| HTTP requests | `xh` | `curl` (unless piping) |
+| Duplicate finder | `czkawka_cli` | `fdupes` |
+
 **PREFERENCE**: Built-in `Read` tool is faster than Bash cat and provides line numbers.
 
 ### Search & File Discovery (Always Allowed)
-- **Preferred**: `rg` (ripgrep), `fd`, `fzf`
+- **Preferred**: `rg` (ripgrep), `fd`, `fzf`, `batgrep` (ripgrep + bat highlighting)
 - Also allowed: `grep`, `find`, `locate`, `ag`, `ack`
 - Globbing: `Glob`, `Grep` (built-in tools)
 - File info: `file`, `stat`, `wc`, `du`, `dust`
+- Duplicate finder: `czkawka_cli` (dup, empty-folders, big, similar images, broken files)
 
 ### File Viewing (Always Allowed)
-- **Preferred**: `bat` (syntax highlighting)
+- **Preferred**: `bat` (syntax highlighting), `batman` (man pages via bat), `batpipe` (pipe viewer)
 - Also allowed: `cat`, `head`, `tail`, `less`, `more`
 - Built-in: `Read` tool
+- File watching: `batwatch` (watch file changes with syntax highlighting)
 - Binary viewing: `hexdump`, `xxd`, `od`
 
 ### Directory Listing (Always Allowed)
@@ -157,7 +183,8 @@ Settings merge across 3 levels (project overrides global):
 ### Text Processing (Always Allowed)
 - Stream: `awk`, `sed`, `cut`, `tr`, `sort`, `uniq`, `paste`, `join`
 - Modern: `sd` (sed alternative), `choose`
-- Diff: `diff`, `comm`, `cmp`, `delta` (git diffs)
+- Diff: `batdiff` (preferred — bat + delta), `diff`, `comm`, `cmp`, `delta` (git diffs)
+- Formatting: `prettybat` (auto-format + syntax highlight)
 - **JSON**: `jq` (query/transform JSON)
 - **YAML**: `yq` (query/transform YAML)
 
@@ -179,6 +206,7 @@ Settings merge across 3 levels (project overrides global):
 - HTTP: `curl`, `wget`, `xh` (httpie-like)
 - DNS: `dig`, `nslookup`, `host`
 - Connections: `ss`, `ip`, `nmcli`
+- Firewall: `ufw` (Uncomplicated Firewall — active, deny incoming / allow outgoing)
 - Testing: `ping`, `traceroute`
 
 ### Package Management (Always Allowed)
@@ -228,10 +256,9 @@ Settings merge across 3 levels (project overrides global):
 ### Editors (for viewing, Always Allowed)
 - `vim -R`, `nvim -R` (read-only mode)
 - `nano`, `emacs`
-- `bat` (preferred for viewing)
+- `bat` + `bat-extras` (preferred — `batgrep`, `batman`, `batdiff`, `batpipe`, `batwatch`, `prettybat`)
 
 ### Dotfile Management (Always Allowed)
-- `chezmoi`
 - `stow`
 
 ### Shell History & Navigation (Always Allowed)
@@ -344,7 +371,7 @@ The following packages and services are installed for system-wide performance:
 
 **Enabled Services:**
 ```bash
-systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
+systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon ufw
 ```
 
 **Additional Kernel Parameters** (in `/boot/refind_linux.conf`):
