@@ -1,0 +1,9 @@
+/var/log/timeshift/*.log {
+    weekly
+    rotate 4
+    compress
+    notifempty
+    missingok
+    olddir /var/log/timeshift/rotated
+    createolddir 755 root root
+}

@@ -149,6 +149,12 @@ SYSTEM_CONFIGS=(
     "/etc/systemd/journald.conf.d/size.conf"
     "/etc/logrotate.conf"
     "/etc/logrotate.d/pacman"
+    # Added 2026-02-03 (logging audit round 2)
+    "/etc/logrotate.d/timeshift"
+    "/etc/logrotate.d/preload"
+    "/etc/systemd/system/logrotate.service.d/no-ac-requirement.conf"
+    "/etc/systemd/system/greetd.service.d/crash-limit.conf"
+    "/etc/sysctl.d/40-ipv6.conf"
 )
 
 collect_dotfiles() {
@@ -284,9 +290,10 @@ collect_dotfiles() {
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/scx_loader/$filename"
                     ;;
                 */systemd/system/*)
-                    mkdir -p "$DOTFILES_DIR/system-configs/systemd-system"
-                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/systemd-system/$filename"
-                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/systemd-system/$filename"
+                    relpath="${filepath#/etc/systemd/system/}"
+                    mkdir -p "$DOTFILES_DIR/system-configs/systemd-system/$(dirname "$relpath")"
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/systemd-system/$relpath"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/systemd-system/$relpath"
                     ;;
                 */pacman.d/hooks/*)
                     mkdir -p "$DOTFILES_DIR/system-configs/pacman.d/hooks"
