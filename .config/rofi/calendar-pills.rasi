@@ -1,0 +1,41 @@
+/* Calendar popup for waybar clock — Gruvbox Material Dark pills
+ * Compact variant of gruvbox-pills.rasi for calendar display.
+ * Used by: ~/.config/waybar/scripts/calendar-waybar.sh
+ */
+
+@import "gruvbox-pills.rasi"
+
+window {
+    width:   280px;
+    padding: 10px;
+}
+
+inputbar {
+    children: [ prompt ];
+    padding:  8px 14px;
+}
+
+prompt {
+    horizontal-align: 0.5;
+}
+
+listview {
+    lines:        3;
+    fixed-height: false;
+    spacing:      2px;
+}
+
+element {
+    padding:       4px 12px;
+    border-radius: 6px;
+}
+
+message {
+    background-color: @bg-pill;
+    border-radius:    12px;
+    padding:          10px 16px;
+}
+
+textbox {
+    font: "CaskaydiaCove NF 13";
+}

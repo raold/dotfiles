@@ -1,0 +1,31 @@
+#!/bin/bash
+# claude-backup — PreToolUse hook for Claude Code
+# Automatically backs up files before Edit/Write operations
+# Backups stored in ~/.claude/backups/ with timestamps
+
+set -e
+
+INPUT=$(cat)
+
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+
+# Nothing to back up if no file path or file doesn't exist yet
+[[ -z "$FILE_PATH" || ! -f "$FILE_PATH" ]] && exit 0
+
+BACKUP_DIR="$HOME/.claude/backups"
+mkdir -p "$BACKUP_DIR"
+
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+# Preserve directory context: /home/dro/foo/bar.py → foo__bar.py
+REL_PATH="${FILE_PATH#$HOME/}"
+SAFE_NAME=$(echo "$REL_PATH" | tr '/' '__')
+
+BACKUP_PATH="$BACKUP_DIR/${SAFE_NAME}.${TIMESTAMP}"
+
+cp "$FILE_PATH" "$BACKUP_PATH"
+
+# Keep a latest-edits log for quick undo
+echo "${TIMESTAMP}|${TOOL_NAME}|${FILE_PATH}|${BACKUP_PATH}" >> "$BACKUP_DIR/.history"
+
+exit 0

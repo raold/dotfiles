@@ -1,0 +1,95 @@
+#!/bin/bash
+# claude-undo — Restore files backed up by claude-backup hook
+#
+# Usage:
+#   claude-undo              # Show last 20 backups, pick one interactively
+#   claude-undo last         # Undo the most recent edit
+#   claude-undo last 3       # Undo the last 3 edits
+#   claude-undo list         # List all backups
+#   claude-undo search foo   # Search backups by filename
+#   claude-undo clean 7      # Delete backups older than 7 days (default 30)
+
+set -e
+
+BACKUP_DIR="$HOME/.claude/backups"
+HISTORY="$BACKUP_DIR/.history"
+
+if [[ ! -f "$HISTORY" ]]; then
+    echo "No backup history found. Nothing to undo."
+    exit 0
+fi
+
+_restore() {
+    local original="$1" backup="$2" timestamp="$3"
+    if [[ ! -f "$backup" ]]; then
+        echo "⚠ Backup file missing: $backup"
+        return 1
+    fi
+    cp "$backup" "$original"
+    echo "✓ Restored: $original (from $timestamp)"
+}
+
+_list_recent() {
+    local count="${1:-20}"
+    echo "Recent Claude Code edits (newest first):"
+    echo "─────────────────────────────────────────────"
+    tail -n "$count" "$HISTORY" | tac | nl -ba | while IFS='|' read -r num timestamp tool filepath backup; do
+        # num has the line number from nl
+        printf "  %s  %s  %-6s %s\n" "$num" "$timestamp" "$tool" "$filepath"
+    done
+    echo "─────────────────────────────────────────────"
+}
+
+case "${1:-}" in
+    last)
+        COUNT="${2:-1}"
+        tail -n "$COUNT" "$HISTORY" | while IFS='|' read -r timestamp tool filepath backup; do
+            _restore "$filepath" "$backup" "$timestamp"
+        done
+        ;;
+
+    list)
+        _list_recent "${2:-50}"
+        ;;
+
+    search)
+        [[ -z "${2:-}" ]] && { echo "Usage: claude-undo search <pattern>"; exit 1; }
+        echo "Backups matching '$2':"
+        grep -i "$2" "$HISTORY" | tac | while IFS='|' read -r timestamp tool filepath backup; do
+            printf "  %s  %-6s %s\n" "$timestamp" "$tool" "$filepath"
+        done
+        ;;
+
+    clean)
+        DAYS="${2:-30}"
+        COUNT=$(find "$BACKUP_DIR" -maxdepth 1 -type f -not -name '.history' -mtime +"$DAYS" -print -delete | wc -l)
+        echo "Cleaned $COUNT backups older than $DAYS days."
+        ;;
+
+    "")
+        # Interactive: show recent, pick with fzf if available
+        if command -v fzf &>/dev/null; then
+            SELECTION=$(tac "$HISTORY" | head -40 | \
+                fzf --prompt="Select backup to restore > " \
+                    --preview='echo {} | cut -d"|" -f4 | xargs head -20 2>/dev/null || echo "(backup preview)"' \
+                    --delimiter='|' \
+                    --with-nth=1,2,3)
+            if [[ -n "$SELECTION" ]]; then
+                IFS='|' read -r timestamp tool filepath backup <<< "$SELECTION"
+                _restore "$filepath" "$backup" "$timestamp"
+            fi
+        else
+            _list_recent 20
+            echo ""
+            echo "Tip: Install fzf for interactive selection, or use:"
+            echo "  claude-undo last        # Undo most recent edit"
+            echo "  claude-undo last 3      # Undo last 3 edits"
+            echo "  claude-undo search foo  # Find backups by name"
+        fi
+        ;;
+
+    *)
+        echo "Usage: claude-undo [last [N] | list [N] | search <pattern> | clean [days]]"
+        exit 1
+        ;;
+esac

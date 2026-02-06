@@ -131,7 +131,7 @@ tooltip label {
     padding: 0 12px 0 6px;
 }
 
-/* ── Storage pill: [disk | updates] ──────────────── */
+/* ── Storage pill (right): [disk | updates] ──────── */
 #disk {
     background-color: rgba(60, 56, 54, 0.8);
     color: #89b482;
@@ -164,44 +164,30 @@ tooltip label {
     color: #ea6962;
 }
 
-/* ── Network pill (solo) ─────────────────────────── */
-#network {
-    background-color: rgba(80, 73, 69, 0.8);
-    color: #d3869b;
-    border-radius: 16px;
-    margin: 4px 3px;
-    padding: 0 12px;
-}
-
-#network.disconnected {
-    color: #ea6962;
-}
-
-/* ── Volume pill (solo) ──────────────────────────── */
+/* ── Ambient pill: [volume | backlight] ─────────── */
 #pulseaudio {
-    background-color: rgba(60, 56, 54, 0.8);
+    background-color: rgba(80, 73, 69, 0.8);
     color: #d8a657;
-    border-radius: 16px;
-    margin: 4px 3px;
-    padding: 0 12px;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
 }
 
 #pulseaudio.muted {
     color: #928374;
 }
 
-/* ── Backlight pill (solo) ───────────────────────── */
 #backlight {
     background-color: rgba(80, 73, 69, 0.8);
     color: #d8a657;
-    border-radius: 16px;
-    margin: 4px 3px;
-    padding: 0 12px;
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
 }
 
-/* ── Power pill (solo): [battery] ────────────────── */
+/* ── Power pill (solo, center): [battery] ────────── */
 #custom-battery {
-    background-color: rgba(80, 73, 69, 0.8);
+    background-color: rgba(60, 56, 54, 0.8);
     color: #e78a4e;
     border-radius: 16px;
     margin: 4px 3px;
@@ -251,7 +237,7 @@ tooltip label {
     padding: 0 12px;
 }
 
-/* ── Controls pill: [bluetooth | tray] ───────────── */
+/* ── Privacy pill: [bluetooth | mullvad] ───────────── */
 #custom-bluetooth {
     background-color: rgba(60, 56, 54, 0.8);
     color: #928374;
@@ -272,6 +258,44 @@ tooltip label {
     color: #928374;
 }
 
+#custom-mullvad {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #928374;
+    border-radius: 0 16px 16px 0;
+    margin: 4px 3px 4px 0;
+    padding: 0 12px 0 6px;
+}
+
+#custom-mullvad.connected {
+    color: #a9b665;
+}
+
+#custom-mullvad.connecting {
+    color: #d8a657;
+}
+
+#custom-mullvad.disconnected {
+    color: #928374;
+}
+
+#custom-mullvad.blocked {
+    color: #ea6962;
+}
+
+/* ── Network + tray pill: [speed | tray] ───────────── */
+#network.speed {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #d3869b;
+    border-radius: 16px 0 0 16px;
+    margin: 4px 0 4px 3px;
+    padding: 0 6px 0 12px;
+}
+
+#network.disconnected {
+    color: #ea6962;
+}
+
+/* ── Tray (right end of network pill) ─────────────── */
 #tray {
     background-color: rgba(60, 56, 54, 0.8);
     border-radius: 0 16px 16px 0;

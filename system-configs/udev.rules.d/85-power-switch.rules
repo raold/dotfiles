@@ -1,0 +1,2 @@
+# Trigger power-switch on AC plug/unplug
+ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", RUN+="/home/dro/.local/bin/power-switch"

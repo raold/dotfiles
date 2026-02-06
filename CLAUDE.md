@@ -218,7 +218,7 @@ Settings merge across 3 levels (project overrides global):
 - `gum` (glamorous shell scripts - prompts, spinners, inputs)
 
 ### Development Tools (Always Allowed)
-- **Python**: `python`, `python3`, `pip`, `uv`, `pyenv`
+- **Python**: `python`, `python3`, `pip`, `uv` (replaces pip/pyenv for venvs and version management)
 - **Node.js**: `node`, `npm`
 - **Rust**: `cargo`, `rustc`
 - **R/Stats**: `R`, `Rscript`

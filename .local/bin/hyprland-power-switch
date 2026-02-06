@@ -1,51 +1,42 @@
 #!/bin/bash
-# Hyprland-specific power optimization for Framework 13 AMD
-# Called by power-switch when AC/battery state changes
-# Toggles compositor features and Waybar polling intervals
-#
-# Usage: hyprland-power-switch {ac|battery}
+# Hyprland-specific power optimization
+# Called by power-switch via: runuser -u dro -- hyprland-power-switch {ac|battery}
 
-# Exit silently if Hyprland isn't running (safe for i3/Sway sessions)
-if ! command -v hyprctl &>/dev/null || ! hyprctl monitors &>/dev/null; then
+# Find Hyprland socket — can't rely on env vars when called from systemd
+HYPR_DIR="/tmp/hypr"
+if [ ! -d "$HYPR_DIR" ] || ! command -v hyprctl &>/dev/null; then
+    exit 0  # Hyprland not running, silently exit
+fi
+
+# Get the most recent Hyprland instance
+HYPRLAND_INSTANCE_SIGNATURE=$(ls -t "$HYPR_DIR" 2>/dev/null | head -1)
+if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     exit 0
 fi
+export HYPRLAND_INSTANCE_SIGNATURE
 
 WAYBAR_DIR="$HOME/.config/waybar"
 MODE="${1:-battery}"
 
-apply_ac() {
-    # Restore full compositor effects
-    hyprctl keyword render:direct_scanout 0
-    hyprctl keyword misc:vrr 0
-    hyprctl keyword decoration:inactive_opacity 0.90
-    hyprctl keyword decoration:blur:enabled true
-    hyprctl keyword animations:enabled true
-
-    # Symlink performance Waybar config and reload
-    ln -sf "$WAYBAR_DIR/config.performance" "$WAYBAR_DIR/config"
-    pkill -SIGUSR2 waybar
-
-    logger "hyprland-power-switch: AC mode — blur, animations, 1s polling"
-}
-
-apply_battery() {
-    # Disable expensive compositor effects
-    hyprctl keyword render:direct_scanout 1
-    hyprctl keyword misc:vrr 1
-    hyprctl keyword decoration:inactive_opacity 0.90
-    hyprctl keyword decoration:blur:enabled false
-    hyprctl keyword animations:enabled false
-
-    # Symlink battery Waybar config and reload
-    ln -sf "$WAYBAR_DIR/config.battery" "$WAYBAR_DIR/config"
-    pkill -SIGUSR2 waybar
-
-    logger "hyprland-power-switch: Battery mode — effects off, 5s polling"
-}
-
 case "$MODE" in
-    ac)      apply_ac ;;
-    battery) apply_battery ;;
+    ac)
+        hyprctl keyword decoration:blur:enabled true
+        hyprctl keyword animations:enabled true
+        hyprctl keyword decoration:inactive_opacity 0.90
+        hyprctl keyword misc:vrr 0
+        [ -f "$WAYBAR_DIR/config.performance" ] && ln -sf "$WAYBAR_DIR/config.performance" "$WAYBAR_DIR/config"
+        pkill -SIGUSR2 waybar 2>/dev/null
+        logger "hyprland-power-switch: AC — blur+animations on"
+        ;;
+    battery)
+        hyprctl keyword decoration:blur:enabled false
+        hyprctl keyword animations:enabled false
+        hyprctl keyword decoration:inactive_opacity 1.0
+        hyprctl keyword misc:vrr 1
+        [ -f "$WAYBAR_DIR/config.battery" ] && ln -sf "$WAYBAR_DIR/config.battery" "$WAYBAR_DIR/config"
+        pkill -SIGUSR2 waybar 2>/dev/null
+        logger "hyprland-power-switch: Battery — effects off"
+        ;;
     *)
         echo "Usage: hyprland-power-switch {ac|battery}" >&2
         exit 1

@@ -12,25 +12,26 @@
         "hyprland/workspaces",
         "sway/mode",
         "hyprland/submap",
-        "custom/spotify"
+        "custom/spotify",
+        "pulseaudio",
+        "backlight"
     ],
 
     "modules-center": [
         "cpu",
         "temperature",
         "memory",
-        "disk",
-        "custom/updates",
-        "network"
+        "custom/battery"
     ],
 
     "modules-right": [
-        "pulseaudio",
-        "backlight",
-        "custom/battery",
+        "disk",
+        "custom/updates",
         "custom/clock",
         "custom/dunst",
         "custom/bluetooth",
+        "custom/mullvad",
+        "network#speed",
         "tray"
     ],
 
@@ -104,14 +105,23 @@
         "on-click-right": "arch-update --check"
     },
 
-    "network": {
+    "network#speed": {
         "format-wifi": "󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
-        "format-ethernet": " {ipaddr}",
-        "format-disconnected": "⚠ Disconnected",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n {bandwidthDownBits}  {bandwidthUpBits}",
-        "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}",
-        "on-click": "nm-connection-editor",
-        "interval": 5
+        "format-ethernet": "󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
+        "format-disconnected": "",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n󰇚 {bandwidthDownBits}  󰕒 {bandwidthUpBits}",
+        "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}\n󰇚 {bandwidthDownBits}  󰕒 {bandwidthUpBits}",
+        "interval": 2
+    },
+
+
+    "custom/mullvad": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/mullvad-waybar.sh",
+        "interval": 10,
+        "on-click": "~/.config/waybar/scripts/mullvad-waybar.sh --menu",
+        "on-click-right": "mullvad reconnect"
     },
 
     "pulseaudio": {
@@ -143,7 +153,7 @@
         "exec": "~/.config/waybar/scripts/clock-waybar.sh",
         "return-type": "json",
         "interval": 30,
-        "on-click": "~/.config/waybar/scripts/clock-waybar.sh --alt",
+        "on-click": "~/.config/waybar/scripts/calendar-waybar.sh",
         "tooltip": true
     },
 
