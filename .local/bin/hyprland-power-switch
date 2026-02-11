@@ -23,7 +23,7 @@ case "$MODE" in
         hyprctl keyword decoration:blur:enabled true
         hyprctl keyword animations:enabled true
         hyprctl keyword decoration:inactive_opacity 0.90
-        hyprctl keyword misc:vrr 0
+        hyprctl keyword misc:vrr 1
         [ -f "$WAYBAR_DIR/config.performance" ] && ln -sf "$WAYBAR_DIR/config.performance" "$WAYBAR_DIR/config"
         pkill -SIGUSR2 waybar 2>/dev/null
         logger "hyprland-power-switch: AC — blur+animations on"
@@ -32,7 +32,7 @@ case "$MODE" in
         hyprctl keyword decoration:blur:enabled false
         hyprctl keyword animations:enabled false
         hyprctl keyword decoration:inactive_opacity 1.0
-        hyprctl keyword misc:vrr 1
+        hyprctl keyword misc:vrr 0
         [ -f "$WAYBAR_DIR/config.battery" ] && ln -sf "$WAYBAR_DIR/config.battery" "$WAYBAR_DIR/config"
         pkill -SIGUSR2 waybar 2>/dev/null
         logger "hyprland-power-switch: Battery — effects off"

@@ -427,9 +427,10 @@
     "supabase@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "figma@claude-plugins-official": true,
-    "greptile@claude-plugins-official": true,
+    "greptile@claude-plugins-official": false,
     "explanatory-output-style@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": false

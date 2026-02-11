@@ -317,9 +317,10 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 1. **Black screen on resume**: Fixed with `amdgpu.dcdebugmask=0x10` kernel param
 2. **High power in sleep**: Must use `amd_pmc.enable_stb=0`
 3. **Captive portals**: NetworkManager dispatcher at `/etc/NetworkManager/dispatcher.d/90-captive-portal`
-4. **WiFi power**: Managed by NetworkManager with iwd backend
+4. **WiFi power**: Intel AX210 (WiFi 6E), managed by NetworkManager with iwd backend
 5. **Temperature reporting**: Use `cros_ec` hwmon (cpu_f75303@4d) for actual CPU temp, NOT `k10temp` Tctl which has +40°C offset. Polybar config: `hwmon-path = /sys/class/hwmon/hwmon8/temp2_input`
 6. **Tray icon black background**: GTK CSS fix at `~/.config/gtk-3.0/gtk.css` forces transparent backgrounds on StatusNotifierItem icons (nm-applet, etc.)
+7. **ABM color wash in power-saver**: Fixed with systemd drop-in at `/etc/systemd/system/power-profiles-daemon.service.d/disable_panel_powersavings.conf` — passes `--block-action=amdgpu_panel_power` to prevent AMD Automatic Brightness Management from washing out colors
 
 ### Hibernate Setup
 - Uses swap file `/swapfile` (64GB) on root partition (not separate partition)
