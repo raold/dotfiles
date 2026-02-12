@@ -4,6 +4,7 @@
 [credential]
 	helper = 
 	helper = /sbin/git-credential-manager
+	credentialStore = gpg
 [credential "https://dev.azure.com"]
 	useHttpPath = true
 [filter "lfs"]
