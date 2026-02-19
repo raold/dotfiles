@@ -12,6 +12,8 @@
         "hyprland/workspaces",
         "sway/mode",
         "hyprland/submap",
+        "disk",
+        "custom/updates",
         "custom/spotify",
         "pulseaudio",
         "backlight"
@@ -25,13 +27,12 @@
     ],
 
     "modules-right": [
-        "disk",
-        "custom/updates",
-        "custom/clock",
         "custom/dunst",
+        "idle_inhibitor",
         "custom/bluetooth",
         "custom/mullvad",
         "network#speed",
+        "custom/clock",
         "tray"
     ],
 
@@ -70,7 +71,7 @@
         "format": " {usage}%",
         "interval": 5,
         "tooltip": true,
-        "on-click": "kitty -e btop"
+        "on-click": "kitty -e ~/.config/waybar/scripts/system-tui.py"
     },
 
     "temperature": {
@@ -79,21 +80,22 @@
         "critical-threshold": 80,
         "format": "󰔏 {temperatureC}°C",
         "interval": 30,
-        "on-click": "kitty -e btop"
+        "on-click": "kitty -e ~/.config/waybar/scripts/system-tui.py"
     },
 
     "memory": {
         "format": " {used:0.1f}G",
         "interval": 5,
         "tooltip-format": "{used:0.1f}G / {total:0.1f}G ({percentage}%)",
-        "on-click": "kitty -e btop"
+        "on-click": "kitty -e ~/.config/waybar/scripts/system-tui.py"
     },
 
     "disk": {
         "path": "/",
         "format": "󰋊 {free}",
         "interval": 30,
-        "tooltip-format": "{path}: {used}/{total} ({percentage_used}%)"
+        "tooltip-format": "{path}: {used}/{total} ({percentage_used}%)",
+        "on-click": "kitty -e ~/.config/waybar/scripts/disk-tui.py"
     },
 
     "custom/updates": {
@@ -111,7 +113,8 @@
         "format-disconnected": "",
         "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n󰇚 {bandwidthDownBits}  󰕒 {bandwidthUpBits}",
         "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}\n󰇚 {bandwidthDownBits}  󰕒 {bandwidthUpBits}",
-        "interval": 2
+        "interval": 2,
+        "on-click": "kitty -e ~/.config/waybar/scripts/network-tui.py"
     },
 
 
@@ -139,21 +142,23 @@
     "backlight": {
         "format": "󰳲 {percent}%",
         "on-scroll-up": "brightnessctl set +5%",
-        "on-scroll-down": "brightnessctl set 5%-"
+        "on-scroll-down": "brightnessctl set 5%-",
+        "on-click": "kitty -e ~/.config/waybar/scripts/battery-tui.py"
     },
 
     "custom/battery": {
         "format": "{}",
         "return-type": "json",
         "exec": "~/.config/waybar/scripts/battery-waybar.sh",
-        "interval": 5
+        "interval": 5,
+        "on-click": "kitty -e ~/.config/waybar/scripts/battery-tui.py"
     },
 
     "custom/clock": {
         "exec": "~/.config/waybar/scripts/clock-waybar.sh",
         "return-type": "json",
         "interval": 30,
-        "on-click": "~/.config/waybar/scripts/calendar-waybar.sh",
+        "on-click": "kitty -e ~/.config/waybar/scripts/calendar-tui.py",
         "tooltip": true
     },
 
@@ -163,6 +168,16 @@
         "exec": "count=$(dunstctl count waiting 2>/dev/null || echo 0); if [ \"$count\" -gt 0 ]; then echo '{\"text\": \" '\"$count\"'\", \"tooltip\": \"'\"$count\"' notifications paused\", \"class\": \"waiting\"}'; else echo '{\"text\": \"\"}'; fi",
         "interval": 5,
         "on-click": "dunstctl set-paused toggle"
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "󰒳",
+            "deactivated": "󰒲"
+        },
+        "tooltip-format-activated": "Caffeine ON — sleep inhibited",
+        "tooltip-format-deactivated": "Caffeine OFF — sleep allowed"
     },
 
     "custom/bluetooth": {
