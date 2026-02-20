@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Launch macOS Ventura VM in VMware Player
+# Handles: kernel modules, networking, XKB workaround
+set -euo pipefail
+
+VM_DIR="$HOME/rice/vmware-macos"
+VMX_FILE="$VM_DIR/macOS-Ventura.vmx"
+XKB_FIX="$HOME/.local/lib/vmware-xkb-fix.so"
+
+# Colors
+red=$'\e[31m' grn=$'\e[32m' ylw=$'\e[33m' rst=$'\e[0m'
+
+die()  { echo "${red}error:${rst} $*" >&2; exit 1; }
+info() { echo "${grn}::${rst} $*"; }
+warn() { echo "${ylw}::${rst} $*"; }
+
+# ── Preflight checks ────────────────────────────────────────
+[[ -f "$VMX_FILE" ]] || die "VMX not found: $VMX_FILE"
+
+# ── Kernel modules ──────────────────────────────────────────
+for mod in vmmon vmnet vmw_vmci; do
+    if ! lsmod | grep -qw "$mod"; then
+        info "Loading kernel module: $mod"
+        sudo modprobe "$mod" || die "Failed to load $mod"
+    fi
+done
+
+# ── VMware networking ───────────────────────────────────────
+if ! systemctl is-active --quiet vmware-networks.service; then
+    info "Starting vmware-networks service"
+    sudo systemctl start vmware-networks.service || die "Failed to start vmware-networks"
+fi
+
+# ── XKB fix (LD_PRELOAD fallback for libxkbcommon regression) ─
+export_xkb_fix=""
+if [[ -f "$XKB_FIX" ]]; then
+    # Only apply if running under XWayland (Hyprland/Sway)
+    if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
+        export_xkb_fix="LD_PRELOAD=$XKB_FIX"
+        info "XKB fix loaded (LD_PRELOAD fallback for XWayland)"
+    fi
+fi
+
+# ── Launch ──────────────────────────────────────────────────
+info "Starting macOS Ventura VM"
+if [[ -n "$export_xkb_fix" ]]; then
+    env LD_PRELOAD="$XKB_FIX" vmplayer "$VMX_FILE" &
+else
+    vmplayer "$VMX_FILE" &
+fi
+disown
+
+info "VM launched (PID: $!)"
+info "Serial log: $VM_DIR/serial.log"
+info "VMware log: $VM_DIR/vmware.log"

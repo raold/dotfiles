@@ -438,6 +438,16 @@ sudo cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.backup-$(date +%Y%m%d-%H%M%S)
 | nvme0n1p6 | 2463db77-... | — | Swap (2G, not mounted - using /swapfile) |
 | nvme0n1p7 | c367a553-... | / | Arch root (876G) |
 
+## Documentation Sync
+
+When making code changes, keep these in sync:
+- `CLAUDE.md` — module map, key classes, exchange auth, dependencies, stats
+- `~/.claude/projects/-home-dro/memory/MEMORY.md` — project status, test counts
+- MCP knowledge graph — entities, relations, paths (via `mcp__memory__*` tools)
+- `README.md` — CLI commands, architecture description
+
+A `Stop` hook automatically reminds you to check at session end. Run `/sync` for a thorough manual audit.
+
 ## Troubleshooting Commands
 
 ```bash

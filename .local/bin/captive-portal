@@ -1,0 +1,61 @@
+#!/bin/bash
+# Manual captive portal toggle for NextDNS
+#
+# Usage:
+#   captive-portal          Toggle: deactivate NextDNS + open browser, or reactivate
+#   captive-portal status   Show NextDNS state + NM connectivity
+#
+# Shares state with the NM dispatcher via /tmp/nextdns-captive-deactivated
+
+FLAG="/tmp/nextdns-captive-deactivated"
+PORTAL_URL="http://neverssl.com"
+
+status() {
+    local nextdns_state nm_conn
+    nextdns_state=$(nextdns status 2>/dev/null || echo "not installed")
+    nm_conn=$(nmcli -t -f CONNECTIVITY general 2>/dev/null || echo "unknown")
+
+    echo "NextDNS:      $nextdns_state"
+    echo "Connectivity: $nm_conn"
+
+    if [ -f "$FLAG" ]; then
+        echo "Portal mode:  ACTIVE (NextDNS deactivated)"
+    else
+        echo "Portal mode:  inactive"
+    fi
+}
+
+toggle() {
+    if [ -f "$FLAG" ]; then
+        # Currently deactivated — reactivate
+        echo "Reactivating NextDNS..."
+        sudo nextdns activate
+        rm -f "$FLAG"
+        echo "NextDNS reactivated. DNS restored to DoH."
+    else
+        # Currently active — deactivate and open browser
+        echo "Deactivating NextDNS for captive portal..."
+        sudo nextdns deactivate
+        touch "$FLAG"
+        echo "NextDNS deactivated. Gateway DNS restored."
+
+        # Force NM to recheck with the new DNS
+        sleep 1
+        nmcli networking connectivity check > /dev/null 2>&1
+
+        echo "Opening portal page..."
+        nohup xdg-open "$PORTAL_URL" > /dev/null 2>&1 &
+        echo "Authenticate in browser, then run 'captive-portal' again to restore NextDNS."
+    fi
+}
+
+case "${1:-toggle}" in
+    status) status ;;
+    toggle) toggle ;;
+    *)
+        echo "Usage: captive-portal [status]"
+        echo "  (no args)  Toggle NextDNS off/on for portal auth"
+        echo "  status     Show current DNS and connectivity state"
+        exit 1
+        ;;
+esac

@@ -114,6 +114,11 @@ LOCAL_BIN_SCRIPTS=(
     # Claude Code helper scripts (added 2026-02-04)
     "claude-backup"
     "claude-undo"
+    "claude-stop-sync"
+    # Utility scripts (added 2026-02-20)
+    "captive-portal"
+    "vmware-macos"
+    "vmplayer-wayland"
 )
 
 # .local/share directories to sync

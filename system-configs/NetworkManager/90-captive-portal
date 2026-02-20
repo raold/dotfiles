@@ -1,84 +1,138 @@
 #!/bin/bash
-# Captive Portal Auto-Open Script
-# Opens browser when NetworkManager detects captive portal
-# Supports both X11 (i3) and Wayland (Sway/Hyprland)
+# Captive Portal Detection — Three-Tier Approach
+#
+# Tier 1: NextDNS resolves via DoH (normal operation, no action needed)
+# Tier 2: NextDNS detect-captive-portals (built-in, 15s grace period)
+# Tier 3: This dispatcher — deactivates NextDNS, restores gateway DNS,
+#          opens browser, reactivates NextDNS after portal auth
+#
+# NM dispatchers run as root. CONNECTIVITY_STATE is set by NetworkManager.
 
 LOG="/tmp/captive-portal.log"
-log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOG"; }
+FLAG="/tmp/nextdns-captive-deactivated"
+
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [dispatcher] $1" >> "$LOG"; }
 
 interface="$1"
 status="$2"
 
 # Only act on connectivity-change events
-if [ "$status" != "connectivity-change" ]; then
-    exit 0
-fi
+[ "$status" != "connectivity-change" ] && exit 0
 
-log "Connectivity change detected on $interface"
-
-# Check if we're in portal state
 connectivity="${CONNECTIVITY_STATE:-$(nmcli -t -f CONNECTIVITY general 2>/dev/null)}"
-log "Connectivity state: $connectivity (env: ${CONNECTIVITY_STATE:-not set})"
+log "Event on $interface — connectivity: $connectivity"
 
-# Trigger on portal OR limited (some portals report as limited)
-if [[ "$connectivity" =~ ^(PORTAL|portal|LIMITED|limited)$ ]]; then
-    log "Portal detected, finding active graphical session..."
-    
-    # Find active graphical session using loginctl
+# ─── Open browser in the user's graphical session ─────────────────────
+open_portal_browser() {
+    local portal_url="http://neverssl.com"
+
     while read -r session_id; do
         [ -z "$session_id" ] && continue
-        
-        SESSION_TYPE=$(loginctl show-session "$session_id" -p Type --value 2>/dev/null)
-        SESSION_STATE=$(loginctl show-session "$session_id" -p State --value 2>/dev/null)
-        
-        # Only consider active graphical sessions (x11 or wayland)
-        if [[ "$SESSION_STATE" == "active" ]] && [[ "$SESSION_TYPE" =~ ^(x11|wayland)$ ]]; then
-            DISPLAY_USER=$(loginctl show-session "$session_id" -p Name --value 2>/dev/null)
-            USER_ID=$(loginctl show-session "$session_id" -p User --value 2>/dev/null)
-            log "Found active $SESSION_TYPE session: $session_id, user: $DISPLAY_USER (uid: $USER_ID)"
-            
-            PORTAL_URL="http://neverssl.com"
-            
-            if [ "$SESSION_TYPE" = "x11" ]; then
-                # X11 session (i3wm)
-                DISPLAY_VAL=$(loginctl show-session "$session_id" -p Display --value 2>/dev/null)
-                DISPLAY_VAL="${DISPLAY_VAL:-:0}"
-                log "X11 mode: DISPLAY=$DISPLAY_VAL"
-                log "Opening $PORTAL_URL for user $DISPLAY_USER"
-                
-                # Use runuser (designed for running commands as another user from root)
-                runuser -u "$DISPLAY_USER" -- env \
-                    DISPLAY="$DISPLAY_VAL" \
-                    XAUTHORITY="/home/$DISPLAY_USER/.Xauthority" \
-                    nohup xdg-open "$PORTAL_URL" >>"$LOG" 2>&1 &
-                
-                log "Browser launch initiated (X11)"
-                
-            elif [ "$SESSION_TYPE" = "wayland" ]; then
-                # Wayland session (Sway/Hyprland)
-                XDG_RUNTIME_DIR="/run/user/$USER_ID"
-                WAYLAND_DISPLAY=$(ls "$XDG_RUNTIME_DIR"/wayland-* 2>/dev/null | head -1 | xargs basename 2>/dev/null)
-                WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
-                log "Wayland mode: XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR, WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
-                log "Opening $PORTAL_URL for user $DISPLAY_USER"
-                
-                runuser -u "$DISPLAY_USER" -- env \
-                    XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
-                    WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
-                    nohup xdg-open "$PORTAL_URL" >>"$LOG" 2>&1 &
-                
-                log "Browser launch initiated (Wayland)"
-            fi
-            
-            # Only open for first active session found
-            break
+
+        local stype sstate duser uid
+        stype=$(loginctl show-session "$session_id" -p Type --value 2>/dev/null)
+        sstate=$(loginctl show-session "$session_id" -p State --value 2>/dev/null)
+
+        [[ "$sstate" == "active" ]] && [[ "$stype" =~ ^(x11|wayland)$ ]] || continue
+
+        duser=$(loginctl show-session "$session_id" -p Name --value 2>/dev/null)
+        uid=$(loginctl show-session "$session_id" -p User --value 2>/dev/null)
+        log "Found active $stype session $session_id (user: $duser, uid: $uid)"
+
+        if [ "$stype" = "x11" ]; then
+            local display_val
+            display_val=$(loginctl show-session "$session_id" -p Display --value 2>/dev/null)
+            display_val="${display_val:-:0}"
+            runuser -u "$duser" -- env \
+                DISPLAY="$display_val" \
+                XAUTHORITY="/home/$duser/.Xauthority" \
+                nohup xdg-open "$portal_url" >>"$LOG" 2>&1 &
+            log "Browser launched (X11, DISPLAY=$display_val)"
+        elif [ "$stype" = "wayland" ]; then
+            local xdg_dir wayland_disp
+            xdg_dir="/run/user/$uid"
+            wayland_disp=$(ls "$xdg_dir"/wayland-* 2>/dev/null | head -1 | xargs basename 2>/dev/null)
+            wayland_disp="${wayland_disp:-wayland-0}"
+            runuser -u "$duser" -- env \
+                XDG_RUNTIME_DIR="$xdg_dir" \
+                WAYLAND_DISPLAY="$wayland_disp" \
+                nohup xdg-open "$portal_url" >>"$LOG" 2>&1 &
+            log "Browser launched (Wayland, display=$wayland_disp)"
         fi
+
+        return 0  # opened for first active session
     done < <(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}')
-    
-    # Check if we found any session
-    if [ -z "$DISPLAY_USER" ]; then
-        log "ERROR: No active graphical session found"
-    fi
-else
-    log "Not in portal state ($connectivity), no action needed"
-fi
+
+    log "ERROR: No active graphical session found"
+    return 1
+}
+
+# ─── Handle connectivity states ───────────────────────────────────────
+case "${connectivity,,}" in
+
+    portal)
+        # NM detected a proper portal redirect (Tier 2 may have helped DNS)
+        log "PORTAL state — opening browser immediately"
+        open_portal_browser
+        ;;
+
+    limited|unknown)
+        # Could be a captive portal that NM can't probe (DNS is broken).
+        # Give NextDNS Tier 2 (detect-captive-portals) 15s to handle it.
+        log "LIMITED/UNKNOWN — waiting 15s for NextDNS CPD (Tier 2)..."
+        sleep 15
+
+        # Recheck connectivity after grace period
+        recheck=$(nmcli networking connectivity check 2>/dev/null)
+        log "Recheck after grace period: $recheck"
+
+        if [[ "${recheck,,}" == "full" ]]; then
+            log "Connectivity restored during grace period (Tier 2 worked)"
+            exit 0
+        fi
+
+        if [[ "${recheck,,}" == "portal" ]]; then
+            # Tier 2 fixed DNS, NM now sees the portal redirect
+            log "PORTAL detected after grace period — opening browser"
+            open_portal_browser
+            exit 0
+        fi
+
+        # Tier 2 failed — escalate to Tier 3: deactivate NextDNS
+        if [ -f "$FLAG" ]; then
+            log "NextDNS already deactivated (flag exists) — opening browser"
+            open_portal_browser
+            exit 0
+        fi
+
+        log "Tier 3: Deactivating NextDNS to restore gateway DNS..."
+        nextdns deactivate >>"$LOG" 2>&1
+        touch "$FLAG"
+        log "NextDNS deactivated, flag file created"
+
+        # Give resolv.conf a moment to settle, then force NM recheck
+        sleep 2
+        recheck2=$(nmcli networking connectivity check 2>/dev/null)
+        log "Post-deactivation connectivity: $recheck2"
+
+        # Open browser regardless — portal pages vary in how NM detects them
+        log "Opening browser for portal authentication"
+        open_portal_browser
+        ;;
+
+    full)
+        # Connectivity is back — reactivate NextDNS if we deactivated it
+        if [ -f "$FLAG" ]; then
+            log "FULL connectivity — reactivating NextDNS (Tier 3 recovery)"
+            nextdns activate >>"$LOG" 2>&1
+            rm -f "$FLAG"
+            log "NextDNS reactivated, flag file removed"
+        else
+            log "FULL connectivity (NextDNS was not deactivated, no action)"
+        fi
+        ;;
+
+    *)
+        log "Unhandled state: $connectivity"
+        ;;
+esac

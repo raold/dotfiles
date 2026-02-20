@@ -1,0 +1,14 @@
+#!/bin/bash
+# Prints a sync reminder at session end. Used by Claude Code Stop hook.
+cat <<'EOF'
+BEFORE STOPPING: If this session made code changes, check whether these need syncing:
+1. Project CLAUDE.md — does module map, key classes, stats, or architecture need updating?
+2. Auto-memory MEMORY.md — does project status, test count, or key patterns need updating?
+3. MCP knowledge graph — were new classes/modules added, paths changed, or relations altered? Use mcp__memory__* tools to update.
+4. README.md — do usage examples or feature descriptions need updating?
+
+If everything is already current (e.g. no code changes this session, or docs were updated mid-session), just confirm 'Docs are current' and stop.
+
+Only update what actually changed — don't audit everything every time.
+EOF
+exit 0

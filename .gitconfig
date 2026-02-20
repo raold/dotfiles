@@ -33,3 +33,9 @@
 	last = log -1 HEAD --stat
 	staged = diff --cached
 	sync = fetch --all --prune
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential

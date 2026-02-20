@@ -1,0 +1,4 @@
+#!/bin/bash
+# Wrapper for VMware Player on Wayland (Hyprland/Sway)
+# Suppresses XKB BadValue crash under XWayland
+exec env LD_PRELOAD=/home/dro/.local/lib/vmware-xkb-fix.so vmplayer "$@"

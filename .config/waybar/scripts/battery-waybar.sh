@@ -1,7 +1,7 @@
 #!/bin/bash
 # Battery module for waybar — uses upower for averaged estimates
 
-CHARGE_LIMIT=70  # Framework BIOS charge limit (70% raw = 100% effective)
+CHARGE_LIMIT=80  # Framework BIOS charge limit (80% raw = 100% effective)
 UPOWER_DEV="/org/freedesktop/UPower/devices/battery_BAT1"
 
 # Parse upower output once

@@ -237,13 +237,25 @@ tooltip label {
     padding: 0 12px;
 }
 
-/* ── Privacy pill: [bluetooth | mullvad] ───────────── */
-#custom-bluetooth {
+/* ── Privacy pill: [caffeine | bluetooth | mullvad] ── */
+#idle_inhibitor {
     background-color: rgba(60, 56, 54, 0.8);
     color: #928374;
     border-radius: 16px 0 0 16px;
     margin: 4px 0 4px 3px;
     padding: 0 6px 0 12px;
+}
+
+#idle_inhibitor.activated {
+    color: #a9b665;
+}
+
+#custom-bluetooth {
+    background-color: rgba(60, 56, 54, 0.8);
+    color: #928374;
+    border-radius: 0;
+    margin: 4px 0;
+    padding: 0 6px;
 }
 
 #custom-bluetooth.on {
@@ -282,25 +294,25 @@ tooltip label {
     color: #ea6962;
 }
 
-/* ── Network + tray pill: [speed | tray] ───────────── */
+/* ── Network pill (solo) ────────────────────────────── */
 #network.speed {
     background-color: rgba(60, 56, 54, 0.8);
     color: #d3869b;
-    border-radius: 16px 0 0 16px;
-    margin: 4px 0 4px 3px;
-    padding: 0 6px 0 12px;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
 }
 
 #network.disconnected {
     color: #ea6962;
 }
 
-/* ── Tray (right end of network pill) ─────────────── */
+/* ── Tray pill (solo) ──────────────────────────────── */
 #tray {
     background-color: rgba(60, 56, 54, 0.8);
-    border-radius: 0 16px 16px 0;
-    margin: 4px 3px 4px 0;
-    padding: 0 12px 0 6px;
+    border-radius: 16px;
+    margin: 4px 3px;
+    padding: 0 12px;
 }
 
 #tray > .passive {
