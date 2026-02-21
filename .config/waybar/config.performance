@@ -14,15 +14,15 @@
         "hyprland/submap",
         "disk",
         "custom/updates",
-        "custom/spotify",
-        "pulseaudio",
-        "backlight"
-    ],
-
-    "modules-center": [
         "cpu",
         "temperature",
         "memory",
+        "custom/spotify"
+    ],
+
+    "modules-center": [
+        "pulseaudio",
+        "backlight",
         "custom/battery"
     ],
 
@@ -31,8 +31,8 @@
         "idle_inhibitor",
         "custom/bluetooth",
         "custom/mullvad",
-        "network#speed",
         "custom/clock",
+        "network#speed",
         "tray"
     ],
 
