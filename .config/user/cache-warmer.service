@@ -1,0 +1,56 @@
+[Unit]
+Description=Warm page cache with frequently used files
+After=default.target
+
+[Service]
+Type=oneshot
+Nice=19
+IOSchedulingClass=idle
+
+# Phase 0: Create tmpfs dirs that get wiped on reboot
+ExecStart=/bin/bash -c '\
+  mkdir -p /tmp/chromium-cache; \
+  echo "Phase 0: tmpfs dirs created"'
+
+# Phase 1: Project source files
+ExecStart=/bin/bash -c '\
+  fd -t f -e py -e r -e R -e Rmd -e sql -e csv -e tex -e bib -e md \
+    -e json -e yaml -e yml -e toml -e sh -e conf -e ini \
+    /home/dro/rice/nfl-analytics \
+    /home/dro/rice/nfl-dissertation \
+    /home/dro/rice/nfl-experiments \
+    /home/dro/rice/nfl-backtest \
+    /home/dro/rice/dotfiles-repo \
+    --exec cat {} + > /dev/null 2>&1; \
+  echo "Phase 1: project files loaded"'
+
+# Phase 2: System binaries
+ExecStart=/bin/bash -c '\
+  cat /usr/bin/python3 /usr/bin/R /usr/bin/git /usr/bin/rg /usr/bin/fd \
+      /usr/bin/bat /usr/bin/node /usr/bin/npm /usr/bin/cargo /usr/bin/nvim \
+      /usr/bin/zsh /usr/bin/kitty /usr/bin/i3 /usr/bin/polybar \
+      > /dev/null 2>&1; \
+  echo "Phase 2: system binaries loaded"'
+
+# Phase 3: Shared libraries of running processes
+ExecStart=/bin/bash -c '\
+  lsof 2>/dev/null | grep "\.so" | awk "{print \$NF}" | sort -u | \
+    xargs cat > /dev/null 2>&1; \
+  echo "Phase 3: shared libraries loaded"'
+
+# Phase 4: Python packages
+ExecStart=/bin/bash -c '\
+  for p in $(python3 -c "import sys; print(chr(10).join(sys.path))" 2>/dev/null); do \
+    [ -d "$p" ] && fd -t f -e py -e pyc "$p" --exec cat {} + > /dev/null 2>&1; \
+  done; \
+  echo "Phase 4: Python packages loaded"'
+
+# Phase 5: R packages
+ExecStart=/bin/bash -c '\
+  for p in $(R --no-save -e "cat(.libPaths(), sep=\"\\n\")" 2>/dev/null); do \
+    [ -d "$p" ] && fd -t f -e R -e r -e rds -e Rdata "$p" --exec cat {} + > /dev/null 2>&1; \
+  done; \
+  echo "Phase 5: R packages loaded"'
+
+[Install]
+WantedBy=default.target

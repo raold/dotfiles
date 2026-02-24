@@ -27,3 +27,10 @@ widget.sni-container {
     background-color: transparent;
     background: transparent;
 }
+
+/* Fix unreadable selected filenames in Thunar/GTK file managers */
+.view:selected,
+iconview:selected,
+.content-view:selected {
+    color: #282828;
+}

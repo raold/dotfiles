@@ -16,5 +16,14 @@
 *.swo
 .*.swp
 
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Tool artifacts
+.flagged
+.serena/
+project.yml
+
 # macOS
 .DS_Store
