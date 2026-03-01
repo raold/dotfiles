@@ -137,6 +137,7 @@ SYSTEM_CONFIGS=(
     "/etc/NetworkManager/dispatcher.d/90-captive-portal"
     "/etc/modprobe.d/amd-pmc.conf"
     "/etc/modprobe.d/amdgpu.conf"
+    "/etc/modprobe.d/blacklist-amdxdna.conf"
     "/etc/systemd/sleep.conf.d/framework-amd.conf"
     "/etc/systemd/logind.conf.d/lid-suspend-hibernate.conf"
     "/etc/mkinitcpio.conf"

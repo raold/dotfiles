@@ -249,9 +249,11 @@ sudo umount /mnt
 ├── refind_linux.conf            # Kernel parameters (used with manual stanza)
 └── EFI/
     ├── BOOT/
-    │   └── BOOTX64.EFI          # systemd-boot (not used)
+    │   ├── BOOTX64.EFI          # rEFInd (UEFI fallback — survives NVRAM loss)
+    │   ├── BOOTX64.EFI.bak      # Previous fallback (pre-2026-02-28)
+    │   └── BOOTX64.EFI.bak-windows-20260228  # Original Windows bootloader
     └── refind/
-        ├── refind_x64.efi       # rEFInd binary
+        ├── refind_x64.efi       # rEFInd binary (canonical copy)
         ├── refind.conf          # Config for this ESP
         └── themes/
             └── refind-gruvbox-theme/
@@ -261,13 +263,17 @@ sudo umount /mnt
 
 ## EFI Boot Entries
 
+Current state (after 2026-02-28 NVRAM recovery):
 ```
-Boot0000* Windows Boot Manager  → nvme0n1p1:/EFI/Microsoft/Boot/bootmgfw.efi (IS rEFInd)
+Boot0001* EFI Hard Drive        → nvme0n1p5 (UEFI auto-discovered, loads BOOTX64.EFI = rEFInd)
+Boot0002* Windows Boot Manager  → nvme0n1p1:/EFI/Microsoft/Boot/bootmgfw.efi
 Boot0003* rEFInd Boot Manager   → nvme0n1p5:/EFI/refind/refind_x64.efi
 Boot2001* EFI USB Device
 Boot2002* EFI DVD/CDROM
 Boot2003* EFI Network
 ```
+
+> **History:** Boot0000 (Windows shim → rEFInd) was lost in 2026-02-28 NVRAM corruption. Boot0001 was auto-created by UEFI firmware discovering the Arch ESP. Boot entries backed up to `~/efi-boot-entries-backup.txt`.
 
 ---
 
@@ -275,8 +281,10 @@ Boot2003* EFI Network
 
 | What | Location |
 |------|----------|
+| EFI boot entries | `~/efi-boot-entries-backup.txt` (2026-02-28) |
 | Windows ESP backup | `/EFI/backup_20251220_191423/` on nvme0n1p1 |
 | rEFInd config backup | `/boot/EFI/refind/refind.conf.save` |
+| Arch ESP fallback backups | `/boot/EFI/BOOT/BOOTX64.EFI.bak*` |
 | Timeshift snapshots | `/mnt/timeshift/` (external drive) |
 
 ---
@@ -290,12 +298,12 @@ The manual stanza hardcodes `/vmlinuz-linux-cachyos`. CachyOS kernel updates rep
 Check if boot order was reset:
 ```bash
 efibootmgr | grep BootOrder
-# Should be: 0003,0000,2001,2002,2003
+# Should be: 0003,0002,0001,2001,2002,2003
 ```
 
 If reset, fix with:
 ```bash
-sudo efibootmgr -o 0003,0000,2001,2002,2003
+sudo efibootmgr -o 0003,0002,0001,2001,2002,2003
 ```
 
 ### Syncing Configs
@@ -307,3 +315,42 @@ sudo mount /dev/nvme0n1p1 /mnt
 #   /mnt/EFI/refind/refind.conf  (Windows ESP)
 sudo umount /mnt
 ```
+
+### After NVRAM Corruption
+If boot entries are lost (blank UEFI boot menu), the UEFI fallback on the Arch ESP (`/boot/EFI/BOOT/BOOTX64.EFI`) should auto-boot rEFInd. Once booted:
+```bash
+# Re-create the rEFInd boot entry
+sudo efibootmgr -c -d /dev/nvme0n1 -p 5 -l '\EFI\refind\refind_x64.efi' -L 'rEFInd Boot Manager'
+
+# Verify and set boot order
+efibootmgr
+sudo efibootmgr -o <new_refind_num>,<windows_num>,2001,2002,2003
+```
+
+### Keeping UEFI Fallback Current
+After rEFInd package updates, re-copy to the fallback path:
+```bash
+sudo cp /boot/EFI/refind/refind_x64.efi /boot/EFI/BOOT/BOOTX64.EFI
+```
+
+---
+
+## Incident Log
+
+### 2026-02-28: NVRAM Corruption from amdxdna SMU Death Spiral
+
+**Cause:** Uninstalling Steam triggered a udev reload. The `amdxdna` kernel module (AMD XDNA NPU driver) responded to the udev event by hammering the SMU (System Management Unit) with repeated initialization requests, causing a death spiral that locked the SoC. Hard power-off was required.
+
+**Impact:** The hard power-off corrupted UEFI NVRAM. Boot0000 (Windows shim containing rEFInd) was destroyed. The system could not boot — UEFI showed a blank boot menu.
+
+**Recovery:**
+1. Entered UEFI firmware settings (F2)
+2. Used "Boot from file" to manually navigate to `nvme0n1p5 → EFI → refind → refind_x64.efi`
+3. Once booted, re-created rEFInd boot entry with `efibootmgr`
+
+**Preventive measures applied:**
+1. **`/etc/modprobe.d/blacklist-amdxdna.conf`** — Blacklists amdxdna from auto-loading on udev events. Manual `modprobe amdxdna` still works if NPU is needed.
+2. **`/boot/EFI/BOOT/BOOTX64.EFI`** — rEFInd copied to the UEFI fallback path on the Arch ESP. If NVRAM is lost again, firmware will auto-discover this and boot rEFInd without manual intervention.
+3. **`~/efi-boot-entries-backup.txt`** — Snapshot of all UEFI boot entries for reference.
+
+**Lesson:** The `amdxdna` module is unstable when responding to udev events. Since the NPU is unused (Sibyl uses Radeon 780M via ROCm, not the XDNA NPU), blacklisting prevents recurrence without losing any functionality.

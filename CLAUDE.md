@@ -321,6 +321,7 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 ### Power Management Files
 - `/etc/modprobe.d/amd-pmc.conf` - AMD PMC module options
 - `/etc/modprobe.d/amdgpu.conf` - AMD GPU module options
+- `/etc/modprobe.d/blacklist-amdxdna.conf` - NPU driver blacklist (prevents SMU crash on udev events)
 - `/etc/systemd/sleep.conf.d/framework-amd.conf` - Sleep/hibernate settings
 - `/home/dro/.local/bin/power-switch` - AC/battery power profile script
 

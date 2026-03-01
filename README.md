@@ -71,7 +71,7 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 ### Performance & Hardware
 - `system-configs/udev.rules.d/` - ADIOS I/O scheduler
 - `system-configs/scx_loader/` - scx_lavd scheduler config
-- `system-configs/modprobe.d/` - AMD GPU/PMC settings
+- `system-configs/modprobe.d/` - AMD GPU/PMC settings, XDNA NPU blacklist
 - `system-configs/systemd-system/` - Keyring update timer
 - `system-configs/pacman.d/hooks/` - Keyring refresh hook
 - `.config/easyeffects/` - Framework speaker EQ presets
@@ -232,6 +232,7 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
 | `udev.rules.d/60-ioschedulers.rules` | `/etc/udev/rules.d/` | ADIOS for NVMe/SSD |
 | `modprobe.d/amd-pmc.conf` | `/etc/modprobe.d/` | PMC soft-dep, disable STB |
 | `modprobe.d/amdgpu.conf` | `/etc/modprobe.d/` | Disable PSR for stable resume |
+| `modprobe.d/blacklist-amdxdna.conf` | `/etc/modprobe.d/` | Blacklist NPU driver (prevents SMU crash on udev) |
 | `systemd-system/keyring-update.*` | `/etc/systemd/system/` | Daily keyring sync (prevents signature failures) |
 | `pacman.d/hooks/refresh-keyring.hook` | `/etc/pacman.d/hooks/` | Auto-populate keyring on update |
 
