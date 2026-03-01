@@ -1,0 +1,14 @@
+[Unit]
+Description=Sibyl Ops Dashboard (FastAPI, port 8271)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/rice/sibyl
+ExecStart=%h/rice/sibyl/.venv/bin/uvicorn sibyl.monitoring.ops_dashboard:_bg_app_factory --factory --host 127.0.0.1 --port 8271
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

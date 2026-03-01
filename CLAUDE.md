@@ -161,6 +161,17 @@ Settings merge across 3 levels (project overrides global):
 
 **PREFERENCE**: Built-in `Read` tool is faster than Bash cat and provides line numbers.
 
+### Development Workflow
+
+**ALWAYS use Plan Mode before making code changes.** Enter Plan Mode (Shift+Tab) to explore the codebase and create an implementation plan before editing or writing files. The workflow is:
+
+1. **Plan Mode** — Read files, explore, ask questions, write a plan
+2. **User approves plan** — ExitPlanMode, user reviews
+3. **Implement** — Execute against the approved plan
+4. **Verify** — Run tests, confirm correctness
+
+Only skip Plan Mode for trivial changes (typo fixes, single-line edits the user explicitly dictated).
+
 ### Search & File Discovery (Always Allowed)
 - **Preferred**: `rg` (ripgrep), `fd`, `fzf`, `batgrep` (ripgrep + bat highlighting)
 - Also allowed: `grep`, `find`, `locate`, `ag`, `ack`
@@ -321,6 +332,8 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 5. **Temperature reporting**: Use `cros_ec` hwmon (cpu_f75303@4d) for actual CPU temp, NOT `k10temp` Tctl which has +40°C offset. Polybar config: `hwmon-path = /sys/class/hwmon/hwmon8/temp2_input`
 6. **Tray icon black background**: GTK CSS fix at `~/.config/gtk-3.0/gtk.css` forces transparent backgrounds on StatusNotifierItem icons (nm-applet, etc.)
 7. **ABM color wash in power-saver**: Fixed with systemd drop-in at `/etc/systemd/system/power-profiles-daemon.service.d/disable_panel_powersavings.conf` — passes `--block-action=amdgpu_panel_power` to prevent AMD Automatic Brightness Management from washing out colors
+8. **XDNA NPU crash risk**: `amdxdna` driver blacklisted in `/etc/modprobe.d/blacklist-amdxdna.conf` — auto-loading caused SMU death spiral on udev reload (2026-02-28). Manual `modprobe amdxdna` still works.
+9. **EFI boot resilience**: rEFInd copied to UEFI fallback path `/boot/EFI/BOOT/BOOTX64.EFI` — survives NVRAM corruption. Original Windows bootloader backed up as `.bak-windows`. Boot entries saved to `~/efi-boot-entries-backup.txt`.
 
 ### Hibernate Setup
 - Uses swap file `/swapfile` (64GB) on root partition (not separate partition)
