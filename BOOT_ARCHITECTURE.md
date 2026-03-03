@@ -31,6 +31,22 @@ These are GPT partition GUIDs used in rEFInd `volume` directives:
 
 ---
 
+## Power Management Policy
+
+The system is configured for a balance of battery longevity and SSD health.
+
+### AC Power
+- **Monitor:** Sleeps after 25 minutes of inactivity (via `hypridle`).
+- **System:** Does NOT sleep or hibernate automatically while on AC.
+- **SSD Protection:** `HibernateOnACPower=no` is set to minimize unnecessary writes.
+
+### Battery Power
+- **Monitor:** Dims after 15 mins, locks after 20 mins, sleeps after 25 mins.
+- **Hibernation:** Configured for hibernation after 25 minutes of lid closure (via `logind` and `hypridle` orchestration).
+- **Swap Strategy:** Uses a 64GB `/swapfile` on the root partition to accommodate the 54GB RAM for full hibernation.
+
+---
+
 ## Boot Architecture Overview
 
 ```
