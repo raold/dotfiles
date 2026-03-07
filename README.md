@@ -44,7 +44,7 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 
 ### Desktop Environment
 - `.config/rofi/` - Application launcher
-- `.config/dunst/` - Notifications
+- `.config/swaync/` - Notifications (swaync; vendor defaults from /etc/xdg/swaync/)
 - `.config/picom/` - X11 compositor
 - `.config/gtk-3.0/` - GTK3 theme settings
 - `.config/gtk-4.0/` - GTK4 theme settings
@@ -93,7 +93,7 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 - `.xinitrc`, `.xprofile` - X11 startup
 - `CLAUDE.md` - Claude Code AI assistant context (symlinked)
 - `.claude/settings.json` - Claude Code settings (symlinked)
-- `.config/systemd/user/` - User systemd services (spotifyd, dunst)
+- `.config/systemd/user/` - User systemd services (spotifyd, swaync)
 
 ## Installation
 
@@ -145,7 +145,7 @@ ln -s ~/rice/dotfiles-repo/.claude/settings.local.json ~/.claude/settings.local.
 - zsh + starship
 - kitty
 - rofi (rofi-wayland for Wayland)
-- dunst
+- swaync
 - btop, bat, atuin, lazygit
 
 ### i3 (X11)

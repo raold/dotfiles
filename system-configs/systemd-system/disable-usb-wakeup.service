@@ -1,0 +1,11 @@
+[Unit]
+Description=Disable USB wake sources for better s2idle battery life
+After=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'for dev in XHC0 XHC1 XHC3 XHC4; do grep -q "$${dev}.*enabled" /proc/acpi/wakeup && echo "$$dev" > /proc/acpi/wakeup || :; done'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

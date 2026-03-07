@@ -7,7 +7,7 @@ This file provides permanent context and permissions for Claude Code when workin
 - **Hardware**: Framework Laptop 13 AMD (Ryzen 7040 series, AMD Radeon 780M)
 - **OS**: Arch Linux with CachyOS kernel (`linux-cachyos`) — znver4 optimized
 - **Display Manager**: greetd + ReGreet (GTK4 Wayland greeter via cage)
-- **Window Managers**: i3wm (X11), Sway (Wayland), Hyprland (Wayland) — synced configs
+- **Window Managers**: Hyprland (Wayland), i3wm (X11), Sway (Wayland) — synced configs
 - **Shell**: zsh with starship prompt
 - **Terminal**: kitty
 - **Dual-boot**: Arch Linux + Windows 11
@@ -18,9 +18,9 @@ Three WMs with **synchronized configurations** via `~/.config/wm-common/`:
 
 | WM | Display | Bar | Status |
 |----|---------|-----|--------|
-| i3wm | X11 | polybar | Primary/daily driver |
+| Hyprland | Wayland | waybar | Primary/daily driver |
+| i3wm | X11 | polybar | Available (fallback) |
 | Sway | Wayland | waybar | Available (battery-focused) |
-| Hyprland | Wayland | waybar | Available (animations disabled) |
 
 **Shared configs** (`wm-common/`): keybindings, colors, workspaces, modes, window-rules
 **WM-specific**: Display output, compositor, clipboard, screenshots, lock screen
@@ -77,8 +77,8 @@ This system uses **rEFInd as the primary bootloader**, having **replaced the Win
 4. **Select "Boot with standard options"** (default) or choose a specific kernel from submenu
 
 ### Critical Boot Files
-- `/boot/EFI/refind/refind.conf` - rEFInd main configuration (manual menuentry)
-- `/boot/refind_linux.conf` - Kernel boot parameters (applies to ALL kernels)
+- `/boot/EFI/refind/refind.conf` - rEFInd main configuration (manual menuentry) — **this is the actual boot source** (line 743 `options`)
+- `/boot/refind_linux.conf` - Kernel boot parameters (only used if `scanfor internal`; currently unused since `scanfor manual` is set)
 
 ### Available Kernels
 | Kernel | File | Purpose |
@@ -425,12 +425,12 @@ The following packages and services are installed for system-wide performance:
 systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon ufw
 ```
 
-**Additional Kernel Parameters** (in `/boot/refind_linux.conf`):
+**Additional Kernel Parameters** (in `refind.conf` menuentry line 743, NOT `refind_linux.conf`):
 - `amdgpu.reset_method=2` — Force MODE2 GPU reset for RDNA3 stability
 - `amdgpu.mes_log_enable=1` — MES scheduler logging for crash diagnostics
 
 **sysctl Optimizations** (from `cachyos-settings`, with local overrides):
-- `vm.swappiness=100` — balanced ZRAM usage (150 caused compositor thrashing during GPU compute)
+- `vm.swappiness=100` — balanced ZRAM usage. Set via udev override `/etc/udev/rules.d/30-zram.rules` (vendor rule in `/usr/lib/` sets 150; 150 caused compositor thrashing during GPU compute)
 - `vm.vfs_cache_pressure=10` — aggressively keep dentries/inodes in cache
 - `vm.min_free_kbytes=131072` — 128MB emergency reserve (raised from 32MB for GPU compute safety)
 - `vm.watermark_boost_factor=15000` — kswapd boost for burst GPU allocations (was disabled)
