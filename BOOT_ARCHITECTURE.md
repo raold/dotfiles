@@ -178,8 +178,10 @@ Your Arch kernel boots with these parameters:
 | `rw` | Mount root read-write |
 | `rootfstype=ext4` | Root filesystem type |
 | `amd_pstate=active` | AMD P-State driver in active mode |
-| `pcie_aspm=force` | Force PCIe Active State Power Management |
-| `pcie_aspm.policy=powersupersave` | Maximum power saving |
+| `pcie_aspm.policy=default` | ASPM default policy (powersupersave caused GPU MES timeouts under compute) |
+| `amdgpu.reset_method=2` | Force MODE2 reset (most reliable for RDNA3 iGPU recovery) |
+| `amdgpu.gpu_recovery=1` | Ensure GPU recovery is enabled |
+| `amdgpu.mes_log_enable=1` | Enable MES logging for GPU crash diagnostics |
 | `rtc_cmos.use_acpi_alarm=1` | ACPI alarm for RTC |
 | `amd_pmc.enable_stb=0` | Disable AMD PMC Smart Trace Buffer (critical for S0i3 sleep) |
 | `gpiolib_acpi.ignore_interrupt=AMDI0030:00@18` | Fix GPIO interrupt issue |
@@ -370,3 +372,21 @@ sudo cp /boot/EFI/refind/refind_x64.efi /boot/EFI/BOOT/BOOTX64.EFI
 3. **`~/efi-boot-entries-backup.txt`** — Snapshot of all UEFI boot entries for reference.
 
 **Lesson:** The `amdxdna` module is unstable when responding to udev events. Since the NPU is unused (Sibyl uses Radeon 780M via ROCm, not the XDNA NPU), blacklisting prevents recurrence without losing any functionality.
+
+### 2026-03-07: GPU MES Crashes During ML Training
+
+**Cause:** Sustained ROCm/HIP compute workloads (Sibyl ML training) on the Radeon 780M triggered repeated MES (Micro Engine Scheduler) failures. The MES firmware stopped responding to `REMOVE_QUEUE` messages, causing GPU reset cascades. After 2-3 successful MODE2 resets, a subsequent reset failed catastrophically — instant hardware reboot with zero kernel logging.
+
+**Contributing factors:**
+1. **`pcie_aspm=force pcie_aspm.policy=powersupersave`** — Forced deep PCIe link sleep states. On an iGPU with shared memory, aggressive ASPM adds wake latency that manifests as GPU hangs to the MES scheduler.
+2. **`vm.min_free_kbytes=32768`** (32MB) — Dangerously low emergency reserve for GPU compute burst allocations. Below 32MB free triggers direct reclaim, stalling GPU buffer allocation.
+3. **`vm.watermark_boost_factor=0`** — Disabled kswapd boost, so reclaim only started when watermarks were breached (too late for burst allocations).
+4. **`rcutree.enable_rcu_lazy=1`** — Deferred kernel callbacks caused latency spikes during compute.
+5. **`power-switch.service` dead** — systemd ordering cycle (`After=power-profiles-daemon.service`) prevented power profile from being set on boot.
+
+**Fixes applied:**
+1. Kernel params: `pcie_aspm.policy=default`, `amdgpu.reset_method=2`, `amdgpu.gpu_recovery=1`, `amdgpu.mes_log_enable=1`; removed `pcie_aspm=force` and `rcutree.enable_rcu_lazy=1`
+2. sysctl: `vm.swappiness=100`, `vm.min_free_kbytes=131072` (128MB), `vm.watermark_boost_factor=15000`
+3. Removed `After=power-profiles-daemon.service` from `power-switch.service`
+
+**Escalation path** (if MES errors continue): Pin ROCm to 6.x, add `amdgpu.noretry=0`, or switch to `linux-lts` kernel.

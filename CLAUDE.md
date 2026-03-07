@@ -98,8 +98,10 @@ zswap.enabled=0                # Disable zswap (using zram via cachyos-settings 
 amd_pmc.enable_stb=0           # Disable Smart Trace Buffer (critical for S0i3 sleep)
 amdgpu.dcdebugmask=0x10        # Disable PSR (Panel Self Refresh) - prevents black screen on resume
 amdgpu.sg_display=0            # Disable scatter-gather display
-pcie_aspm=force                # Force PCIe Active State Power Management
-pcie_aspm.policy=powersupersave
+pcie_aspm.policy=default       # ASPM default policy (powersupersave caused GPU MES timeouts under compute)
+amdgpu.reset_method=2          # Force MODE2 reset (most reliable for RDNA3 iGPU recovery)
+amdgpu.gpu_recovery=1          # Ensure GPU recovery is enabled
+amdgpu.mes_log_enable=1        # Enable MES logging for GPU crash diagnostics
 rtc_cmos.use_acpi_alarm=1      # ACPI alarm for wake from hibernation
 gpiolib_acpi.ignore_interrupt=AMDI0030:00@18  # Framework-specific GPIO interrupt fix
 ```
@@ -335,6 +337,7 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 7. **ABM color wash in power-saver**: Fixed with systemd drop-in at `/etc/systemd/system/power-profiles-daemon.service.d/disable_panel_powersavings.conf` — passes `--block-action=amdgpu_panel_power` to prevent AMD Automatic Brightness Management from washing out colors
 8. **XDNA NPU crash risk**: `amdxdna` driver blacklisted in `/etc/modprobe.d/blacklist-amdxdna.conf` — auto-loading caused SMU death spiral on udev reload (2026-02-28). Manual `modprobe amdxdna` still works.
 9. **EFI boot resilience**: rEFInd copied to UEFI fallback path `/boot/EFI/BOOT/BOOTX64.EFI` — survives NVRAM corruption. Original Windows bootloader backed up as `.bak-windows`. Boot entries saved to `~/efi-boot-entries-backup.txt`.
+10. **GPU MES crashes during ML training**: RDNA3 780M MES (Micro Engine Scheduler) fails under sustained ROCm/HIP compute, causing hard reboots. Mitigated with `amdgpu.reset_method=2`, `pcie_aspm.policy=default` (was `powersupersave`), and raised `vm.min_free_kbytes=131072`. Monitor with `journalctl -f --grep="MES|GPU|reset"`. If MES errors persist, escalate to pinning ROCm 6.x or switching to `linux-lts`.
 
 ### Hibernate Setup
 - Uses swap file `/swapfile` (64GB) on root partition (not separate partition)
@@ -423,11 +426,14 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon ufw
 ```
 
 **Additional Kernel Parameters** (in `/boot/refind_linux.conf`):
-- `rcutree.enable_rcu_lazy=1` — 5-10% idle power savings
+- `amdgpu.reset_method=2` — Force MODE2 GPU reset for RDNA3 stability
+- `amdgpu.mes_log_enable=1` — MES scheduler logging for crash diagnostics
 
 **sysctl Optimizations** (from `cachyos-settings`, with local overrides):
-- `vm.swappiness=100` — balanced ZRAM usage (overridden from cachyos default 150 to prevent compositor swap thrashing)
-- `vm.vfs_cache_pressure=50` — keep more dentries/inodes in cache
+- `vm.swappiness=100` — balanced ZRAM usage (150 caused compositor thrashing during GPU compute)
+- `vm.vfs_cache_pressure=10` — aggressively keep dentries/inodes in cache
+- `vm.min_free_kbytes=131072` — 128MB emergency reserve (raised from 32MB for GPU compute safety)
+- `vm.watermark_boost_factor=15000` — kswapd boost for burst GPU allocations (was disabled)
 - ZRAM with ZSTD compression matching RAM size
 
 **I/O Scheduler**: `adios` for NVMe (Adaptive Deadline I/O Scheduler — better latency than `none` while maintaining throughput)

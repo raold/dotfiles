@@ -1,6 +1,6 @@
 [Unit]
 Description=Apply power profile based on AC/battery state
-After=power-profiles-daemon.service
+# powerprofilesctl communicates via D-Bus (socket-activated), no hard ordering needed
 
 [Service]
 Type=oneshot
