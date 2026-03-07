@@ -355,7 +355,7 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 - **Cooldown**: `/var/lib/borg-backup-last-run` stamp file — skips if backup ran within 24h
 - **Retention**: 3 daily, 2 weekly, 1 monthly
 - **Excludes**: /home, /root, /tmp, /var/cache/pacman, /swapfile, /dev, /proc, /sys, /run, /mnt, /media, docker/containerd
-- **fstab**: `LABEL=borg-backup /mnt/borg-backup ext4 noauto,nofail,relatime 0 2`
+- **fstab**: `LABEL=borg-backup /mnt/borg-backup ext4 noauto,nofail,relatime 0 0`
 - **First backup**: 51 GB → 19.4 GB deduplicated (62% savings), ~10 min
 
 ```bash

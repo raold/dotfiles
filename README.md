@@ -237,6 +237,7 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
 | `modprobe.d/blacklist-amdxdna.conf` | `/etc/modprobe.d/` | Blacklist NPU driver (prevents SMU crash on udev) |
 | `sysctl.d/99-ram-optimizations.conf` | `/etc/sysctl.d/` | ZRAM tuning, dirty pages, VFS cache |
 | `sysctl.d/99-zz-swappiness-override.conf` | `/etc/sysctl.d/` | Override swappiness 150→100 (prevents compositor swap thrashing) |
+| `systemd-system/power-switch.service` | `/etc/systemd/system/` | Apply power profile on boot (AC/battery detection) |
 | `systemd-system/keyring-update.*` | `/etc/systemd/system/` | Daily keyring sync (prevents signature failures) |
 | `systemd-system/borg-backup/` | `/etc/systemd/system/` | Borg backup service + timer (daily 2 AM, AC-only) |
 | `pacman.d/hooks/refresh-keyring.hook` | `/etc/pacman.d/hooks/` | Auto-populate keyring on update |
