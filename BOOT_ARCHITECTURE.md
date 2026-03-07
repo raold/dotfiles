@@ -52,7 +52,7 @@ The system is configured for a balance of battery longevity and SSD health.
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                      UEFI Firmware                               │
-│  BootOrder: 0003 → 0002 → 0001 → 2001 → 2002 → 2003            │
+│  BootOrder: 0003 → 0002 → 0001 → 2001 → 2002 → 2003              │
 └───────────────────────────┬──────────────────────────────────────┘
                             │
           ┌─────────────────┼─────────────────┐
@@ -62,7 +62,7 @@ The system is configured for a balance of battery longevity and SSD health.
 │ Boot0003: rEFInd │ │ Boot0002:    │ │ Boot0001: EFI Hard Drive │
 │ (Arch ESP - p5)  │ │ Windows Boot │ │ (Arch ESP - p5)          │
 │ /EFI/refind/     │ │ Manager      │ │ UEFI auto-fallback:      │
-│  refind_x64.efi  │ │ (Win ESP p1) │ │ /EFI/BOOT/BOOTX64.EFI   │
+│  refind_x64.efi  │ │ (Win ESP p1) │ │ /EFI/BOOT/BOOTX64.EFI    │
 └────────┬─────────┘ └──────┬───────┘ │ (IS rEFInd — resilience) │
          │                  │         └────────────┬─────────────┘
          │                  │                      │
