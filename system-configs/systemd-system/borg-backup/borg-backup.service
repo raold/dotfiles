@@ -1,0 +1,10 @@
+[Unit]
+Description=Borg system backup
+ConditionPathExists=/dev/disk/by-label/borg-backup
+
+[Service]
+Type=oneshot
+Nice=19
+IOSchedulingClass=idle
+ExecStart=/usr/bin/systemd-inhibit --what=sleep --who="Borg Backup" --why="System backup in progress" /usr/local/bin/borg-system-backup
+TimeoutStartSec=7200

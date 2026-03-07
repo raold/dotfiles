@@ -301,7 +301,7 @@ Boot2003* EFI Network
 | Windows ESP backup | `/EFI/backup_20251220_191423/` on nvme0n1p1 |
 | rEFInd config backup | `/boot/EFI/refind/refind.conf.save` |
 | Arch ESP fallback backups | `/boot/EFI/BOOT/BOOTX64.EFI.bak*` |
-| Timeshift snapshots | `/mnt/timeshift/` (external drive) |
+| Borg backup repo | `/mnt/borg-backup/system` (125.5G USB drive, label `borg-backup`) |
 
 ---
 

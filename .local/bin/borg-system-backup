@@ -1,0 +1,72 @@
+#!/bin/bash
+# Borg system backup — runs under systemd-inhibit, AC-only
+set -euo pipefail
+
+REPO="/mnt/borg-backup/system"
+MOUNTPOINT="/mnt/borg-backup"
+LOGFILE="/var/log/borg-backup.log"
+
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOGFILE"; }
+
+# Check AC power
+if [ "$(cat /sys/class/power_supply/ACAD/online 2>/dev/null)" != "1" ]; then
+    log "SKIP: Not on AC power"
+    exit 0
+fi
+
+# Check if drive is present
+if [ ! -b /dev/disk/by-label/borg-backup ]; then
+    log "SKIP: Drive not present"
+    exit 0
+fi
+
+# Mount if needed
+MOUNTED_BY_US=0
+if ! mountpoint -q "$MOUNTPOINT"; then
+    mount "$MOUNTPOINT" || { log "ERROR: Failed to mount"; exit 1; }
+    MOUNTED_BY_US=1
+fi
+
+log "START: Creating backup"
+
+# Create backup with pruning info in archive name
+borg create \
+    --verbose --stats --show-rc \
+    --compression zstd,3 \
+    --exclude '/home/*' \
+    --exclude '/root/*' \
+    --exclude '/var/cache/pacman/pkg/*' \
+    --exclude '/var/tmp/*' \
+    --exclude '/tmp/*' \
+    --exclude '/dev/*' \
+    --exclude '/proc/*' \
+    --exclude '/sys/*' \
+    --exclude '/run/*' \
+    --exclude '/mnt/*' \
+    --exclude '/media/*' \
+    --exclude '/lost+found' \
+    --exclude '/swapfile' \
+    --exclude '/var/lib/docker/*' \
+    --exclude '/var/lib/containerd/*' \
+    "$REPO::system-{now:%Y-%m-%d_%H-%M}" \
+    / \
+    2>&1 | tee -a "$LOGFILE"
+
+# Prune: keep 3 daily, 2 weekly, 1 monthly
+borg prune \
+    --verbose --stats --show-rc \
+    --keep-daily=3 \
+    --keep-weekly=2 \
+    --keep-monthly=1 \
+    "$REPO" \
+    2>&1 | tee -a "$LOGFILE"
+
+# Compact to reclaim space
+borg compact "$REPO" 2>&1 | tee -a "$LOGFILE"
+
+log "DONE: Backup complete"
+
+# Unmount if we mounted it
+if [ "$MOUNTED_BY_US" = "1" ]; then
+    umount "$MOUNTPOINT"
+fi

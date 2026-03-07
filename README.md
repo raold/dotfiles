@@ -67,12 +67,14 @@ See [WM-SETUP.md](WM-SETUP.md) for complete documentation.
 - `fix-keyring` - Emergency pacman keyring repair
 - `clip2path` - Clipboard image to file path (kitty)
 - `wttr` - Weather CLI
+- `borg-system-backup` - Borg backup wrapper (AC-only, sleep-inhibit, auto-mount)
 
 ### Performance & Hardware
 - `system-configs/udev.rules.d/` - ADIOS I/O scheduler
 - `system-configs/scx_loader/` - scx_lavd scheduler config
 - `system-configs/modprobe.d/` - AMD GPU/PMC settings, XDNA NPU blacklist
-- `system-configs/systemd-system/` - Keyring update timer
+- `system-configs/systemd-system/` - Keyring update timer, Borg backup service+timer
+- `system-configs/sysctl.d/` - RAM optimizations, swappiness override
 - `system-configs/pacman.d/hooks/` - Keyring refresh hook
 - `.config/easyeffects/` - Framework speaker EQ presets
 - `.config/slimbookbattery/` - Battery profile manager
@@ -233,7 +235,10 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon
 | `modprobe.d/amd-pmc.conf` | `/etc/modprobe.d/` | PMC soft-dep, disable STB |
 | `modprobe.d/amdgpu.conf` | `/etc/modprobe.d/` | Disable PSR for stable resume |
 | `modprobe.d/blacklist-amdxdna.conf` | `/etc/modprobe.d/` | Blacklist NPU driver (prevents SMU crash on udev) |
+| `sysctl.d/99-ram-optimizations.conf` | `/etc/sysctl.d/` | ZRAM tuning, dirty pages, VFS cache |
+| `sysctl.d/99-zz-swappiness-override.conf` | `/etc/sysctl.d/` | Override swappiness 150→100 (prevents compositor swap thrashing) |
 | `systemd-system/keyring-update.*` | `/etc/systemd/system/` | Daily keyring sync (prevents signature failures) |
+| `systemd-system/borg-backup/` | `/etc/systemd/system/` | Borg backup service + timer (daily 2 AM, AC-only) |
 | `pacman.d/hooks/refresh-keyring.hook` | `/etc/pacman.d/hooks/` | Auto-populate keyring on update |
 
 ### Verify Setup
@@ -262,6 +267,28 @@ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver  # amd-pstate-epp
 - Fallback: `ly` TUI greeter (installed but disabled)
 
 See [CLAUDE.md](CLAUDE.md) for greetd configuration details and rollback instructions.
+
+## System Backup (Borg)
+
+**Borg Backup** replaces Timeshift (removed March 2026 due to USB drive corruption during sleep). Uses atomic commits + dedup+zstd compression on a 125.5G ext4 USB drive (`/dev/sda2`, label `borg-backup`).
+
+- Daily at 2 AM (systemd timer), AC power only, sleep-inhibited
+- Retention: 3 daily, 2 weekly, 1 monthly
+- First backup: 51 GB → 19.4 GB (62% compression+dedup savings)
+
+| File | System Path | Purpose |
+|------|-------------|---------|
+| `borg-system-backup` | `/usr/local/bin/` | Wrapper script (AC check, mount, backup, prune) |
+| `borg-backup.service` | `/etc/systemd/system/` | Oneshot service (Nice=19, IOSchedulingClass=idle) |
+| `borg-backup.timer` | `/etc/systemd/system/` | Daily timer with 30min jitter |
+
+```bash
+# Manual backup
+sudo systemctl start borg-backup.service
+
+# List archives
+sudo mount /mnt/borg-backup && sudo borg list /mnt/borg-backup/system && sudo umount /mnt/borg-backup
+```
 
 ## Documentation
 

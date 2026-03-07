@@ -344,6 +344,37 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 - Suspend-then-hibernate after 30min on battery (`/etc/systemd/sleep.conf.d/framework-amd.conf`)
 - To verify hibernate is ready: `swapon --show` should list both zram0 AND /swapfile
 
+### System Backup (Borg)
+
+**Borg Backup** (v1.4.3) replaces Timeshift (removed March 2026 — rsync mode caused USB drive corruption during sleep). Borg uses atomic commits and dedup+zstd compression.
+
+- **Repo**: `/mnt/borg-backup/system` (125.5G ext4 USB drive, label `borg-backup`, `/dev/sda2`)
+- **Script**: `/usr/local/bin/borg-system-backup` (AC-only, auto-mount, sleep-inhibit)
+- **Timer**: `borg-backup.timer` — daily at 2 AM, 30min jitter, persistent catch-up
+- **Retention**: 3 daily, 2 weekly, 1 monthly
+- **Excludes**: /home, /root, /tmp, /var/cache/pacman, /swapfile, /dev, /proc, /sys, /run, /mnt, /media, docker/containerd
+- **fstab**: `LABEL=borg-backup /mnt/borg-backup ext4 noauto,nofail,relatime 0 2`
+- **First backup**: 51 GB → 19.4 GB deduplicated (62% savings), ~10 min
+
+```bash
+# Check timer
+systemctl list-timers | grep borg
+
+# Manual backup
+sudo systemctl start borg-backup.service
+
+# List/inspect archives
+sudo mount /mnt/borg-backup
+sudo borg list /mnt/borg-backup/system
+sudo borg info /mnt/borg-backup/system
+sudo umount /mnt/borg-backup
+
+# Restore (from live USB)
+sudo mount /dev/nvme0n1p7 /mnt
+sudo mount /mnt/borg-backup
+cd /mnt && sudo borg extract /mnt/borg-backup/system::ARCHIVE_NAME
+```
+
 ### CachyOS Kernel Setup
 CachyOS repositories are installed for znver4-optimized packages (Zen 4 specific builds).
 
@@ -392,8 +423,8 @@ systemctl is-active scx_loader ananicy-cpp irqbalance power-profiles-daemon ufw
 **Additional Kernel Parameters** (in `/boot/refind_linux.conf`):
 - `rcutree.enable_rcu_lazy=1` — 5-10% idle power savings
 
-**sysctl Optimizations** (from `cachyos-settings`):
-- `vm.swappiness=150` — aggressive ZRAM usage (ZRAM is fast)
+**sysctl Optimizations** (from `cachyos-settings`, with local overrides):
+- `vm.swappiness=100` — balanced ZRAM usage (overridden from cachyos default 150 to prevent compositor swap thrashing)
 - `vm.vfs_cache_pressure=50` — keep more dentries/inodes in cache
 - ZRAM with ZSTD compression matching RAM size
 
