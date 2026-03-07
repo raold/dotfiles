@@ -349,8 +349,10 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 **Borg Backup** (v1.4.3) replaces Timeshift (removed March 2026 — rsync mode caused USB drive corruption during sleep). Borg uses atomic commits and dedup+zstd compression.
 
 - **Repo**: `/mnt/borg-backup/system` (125.5G ext4 USB drive, label `borg-backup`, `/dev/sda2`)
-- **Script**: `/usr/local/bin/borg-system-backup` (AC-only, auto-mount, sleep-inhibit)
-- **Timer**: `borg-backup.timer` — daily at 2 AM, 30min jitter, persistent catch-up
+- **Script**: `/usr/local/bin/borg-system-backup` (AC-only, 24h cooldown stamp, auto-mount, sleep-inhibit)
+- **Trigger**: udev rule (`85-borg-backup.rules`) starts timer on AC connect → 2min delay → backup
+- **Timer**: `borg-backup.timer` — AC-triggered (OnActiveSec=2min) + daily 2 AM fallback, 30min jitter, persistent catch-up
+- **Cooldown**: `/var/lib/borg-backup-last-run` stamp file — skips if backup ran within 24h
 - **Retention**: 3 daily, 2 weekly, 1 monthly
 - **Excludes**: /home, /root, /tmp, /var/cache/pacman, /swapfile, /dev, /proc, /sys, /run, /mnt, /media, docker/containerd
 - **fstab**: `LABEL=borg-backup /mnt/borg-backup ext4 noauto,nofail,relatime 0 2`

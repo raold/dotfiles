@@ -1,8 +1,12 @@
 [Unit]
-Description=Borg system backup timer
+Description=Borg system backup timer (AC-triggered)
 
 [Timer]
+# Fire 2 min after timer activation (AC plug-in via udev)
+OnActiveSec=2min
+# Also run daily at 2 AM as fallback (laptop left on AC all day)
 OnCalendar=*-*-* 02:00:00
+# Catch up missed runs on next wake/AC
 Persistent=true
 RandomizedDelaySec=30min
 

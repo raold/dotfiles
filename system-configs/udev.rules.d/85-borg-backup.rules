@@ -1,0 +1,2 @@
+# Start borg backup timer when AC power is connected
+ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", TAG+="systemd", ENV{SYSTEMD_WANTS}="borg-backup.timer"
