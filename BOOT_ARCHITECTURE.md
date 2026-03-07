@@ -257,7 +257,7 @@ sudo umount /mnt
 ### Arch ESP (`/dev/nvme0n1p5` mounted at `/boot`)
 ```
 /boot/
-├── vmlinuz-linux-cachyos         # CachyOS kernel (default)
+├── vmlinuz-linux-cachyos        # CachyOS kernel (default)
 ├── vmlinuz-linux-lts            # LTS kernel (fallback)
 ├── initramfs-linux-cachyos.img  # CachyOS initramfs
 ├── initramfs-linux-lts.img      # LTS initramfs
