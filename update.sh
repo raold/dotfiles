@@ -166,6 +166,8 @@ SYSTEM_CONFIGS=(
     "/etc/systemd/system/logrotate.service.d/no-ac-requirement.conf"
     "/etc/systemd/system/greetd.service.d/crash-limit.conf"
     "/etc/sysctl.d/40-ipv6.conf"
+    # Added 2026-03-10 (WifiMan Teleport VPN setup)
+    "/etc/sysctl.conf"
 )
 
 collect_dotfiles() {
@@ -288,7 +290,7 @@ collect_dotfiles() {
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/logind.conf.d/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/logind.conf.d/$filename"
                     ;;
-                */mkinitcpio.conf)
+                */mkinitcpio.conf|*/sysctl.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
                     ;;
