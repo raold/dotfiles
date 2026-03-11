@@ -36,6 +36,30 @@
           }
         ]
       }
+    ],
+    "WorktreeCreate": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/dro/.local/bin/claude-worktree-init",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/dro/.local/bin/claude-session-check",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
@@ -50,7 +74,6 @@
     "supabase@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "figma@claude-plugins-official": true,
-    "greptile@claude-plugins-official": false,
     "explanatory-output-style@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
     "clangd-lsp@claude-plugins-official": true,
@@ -63,5 +86,13 @@
   },
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "extraKnownMarketplaces": {
+    "knowledge-work-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/knowledge-work-plugins"
+      }
+    }
+  }
 }

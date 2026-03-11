@@ -168,6 +168,8 @@ SYSTEM_CONFIGS=(
     "/etc/sysctl.d/40-ipv6.conf"
     # Added 2026-03-10 (WifiMan Teleport VPN setup)
     "/etc/sysctl.conf"
+    # Added 2026-03-11 (S0i3 fix — Thunderbolt NHI wakeup blocker)
+    "/usr/lib/systemd/system-sleep/framework-s0i3-fix.sh"
 )
 
 collect_dotfiles() {
@@ -266,6 +268,7 @@ collect_dotfiles() {
     mkdir -p "$DOTFILES_DIR/system-configs/xorg.conf.d"
     mkdir -p "$DOTFILES_DIR/system-configs/journald.conf.d"
     mkdir -p "$DOTFILES_DIR/system-configs/logrotate.d"
+    mkdir -p "$DOTFILES_DIR/system-configs/system-sleep"
     for filepath in "${SYSTEM_CONFIGS[@]}"; do
         if [[ -f "$filepath" ]]; then
             filename=$(basename "$filepath")
@@ -332,6 +335,10 @@ collect_dotfiles() {
                 */logrotate.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
                     sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/$filename"
+                    ;;
+                */system-sleep/*)
+                    sudo cp "$filepath" "$DOTFILES_DIR/system-configs/system-sleep/$filename"
+                    sudo chown "$USER:$USER" "$DOTFILES_DIR/system-configs/system-sleep/$filename"
                     ;;
                 */zram-generator.conf)
                     sudo cp "$filepath" "$DOTFILES_DIR/system-configs/$filename"
@@ -488,6 +495,9 @@ install_system() {
                 ;;
             */logrotate.conf)
                 src="$DOTFILES_DIR/system-configs/$filename"
+                ;;
+            */system-sleep/*)
+                src="$DOTFILES_DIR/system-configs/system-sleep/$filename"
                 ;;
             */zram-generator.conf)
                 src="$DOTFILES_DIR/system-configs/$filename"

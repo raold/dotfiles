@@ -324,7 +324,9 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 - `/etc/modprobe.d/amd-pmc.conf` - AMD PMC module options
 - `/etc/modprobe.d/amdgpu.conf` - AMD GPU module options
 - `/etc/modprobe.d/blacklist-amdxdna.conf` - NPU driver blacklist (prevents SMU crash on udev events)
-- `/etc/systemd/sleep.conf.d/framework-amd.conf` - Sleep/hibernate settings
+- `/etc/systemd/sleep.conf.d/framework-amd.conf` - Sleep/hibernate settings (HibernateMode=shutdown)
+- `/etc/systemd/logind.conf.d/lid-suspend-hibernate.conf` - Lid switch → suspend-then-hibernate
+- `/usr/lib/systemd/system-sleep/framework-s0i3-fix.sh` - Thunderbolt NHI wakeup disable for S0i3
 - `/home/dro/.local/bin/power-switch` - AC/battery power profile script
 
 ### Known Issues & Workarounds
@@ -338,13 +340,17 @@ Each project may have its own `CLAUDE.md` that extends/overrides this global con
 8. **XDNA NPU crash risk**: `amdxdna` driver blacklisted in `/etc/modprobe.d/blacklist-amdxdna.conf` — auto-loading caused SMU death spiral on udev reload (2026-02-28). Manual `modprobe amdxdna` still works.
 9. **EFI boot resilience**: rEFInd copied to UEFI fallback path `/boot/EFI/BOOT/BOOTX64.EFI` — survives NVRAM corruption. Original Windows bootloader backed up as `.bak-windows`. Boot entries saved to `~/efi-boot-entries-backup.txt`.
 10. **GPU MES crashes during ML training**: RDNA3 780M MES (Micro Engine Scheduler) fails under sustained ROCm/HIP compute, causing hard reboots. Mitigated with `amdgpu.reset_method=2`, `pcie_aspm.policy=default` (was `powersupersave`), and raised `vm.min_free_kbytes=131072`. Monitor with `journalctl -f --grep="MES|GPU|reset"`. If MES errors persist, escalate to pinning ROCm 6.x or switching to `linux-lts`.
+11. **GPU crash on hibernate resume (ACPI S4)**: RDNA3 780M SDMA0 ring timeout + MES unresponsive on S4 wake. Fixed with `HibernateMode=shutdown` in sleep.conf — kernel writes image to swap then powers off completely; resume goes through cold boot → GPU inits fresh → restore from image. Config: `/etc/systemd/sleep.conf.d/framework-amd.conf`
+12. **S0i3 blocked by Thunderbolt NHI**: NHI0/NHI1 (c3:00.5/c3:00.6) ACPI wakeup prevents SoC from reaching deepest idle state during s2idle, causing ~5-10%/hr drain instead of ~1-2%/hr. Fixed with sleep hook at `/usr/lib/systemd/system-sleep/framework-s0i3-fix.sh` that disables PCI wakeup pre-suspend and re-enables post-resume.
 
 ### Hibernate Setup
 - Uses swap file `/swapfile` (64GB) on root partition (not separate partition)
 - **IMPORTANT**: Swapfile must be formatted with `mkswap /swapfile` and enabled with `swapon /swapfile`
 - zram is also active for regular swap (priority 100), swapfile is for hibernate (priority -2)
 - `resume=UUID=c367a553-2673-40c2-87f3-7db256ef1447` and `resume_offset=3989504` in kernel params
-- Suspend-then-hibernate after 30min on battery (`/etc/systemd/sleep.conf.d/framework-amd.conf`)
+- `HibernateMode=shutdown` — avoids ACPI S4 which crashes RDNA3 GPU; does clean power off instead
+- Lid close on battery → suspend-then-hibernate (fast wakes + zero drain after 30min)
+- Lid close on AC → suspend only (no hibernate, saves SSD wear)
 - To verify hibernate is ready: `swapon --show` should list both zram0 AND /swapfile
 
 ### System Backup (Borg)
