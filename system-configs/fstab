@@ -1,0 +1,19 @@
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+# /dev/nvme0n1p7
+UUID=c367a553-2673-40c2-87f3-7db256ef1447	/         	ext4      	rw,noatime	0 1
+
+# /dev/nvme0n1p5
+UUID=ACE6-9D1E      	/boot     	vfat      	rw,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro	0 2
+
+# /dev/nvme0n1p6
+
+/swapfile none swap defaults 0 0
+
+# Framework 1TB expansion card - exFAT partition
+UUID=591C-CDD2      	/mnt/expansion	exfat     	rw,nofail,uid=1000,gid=1000	0 0
+
+# Framework 1TB expansion card - Borg backup ext4 partition
+LABEL=borg-backup	/mnt/borg-backup	ext4	noauto,nofail,relatime	0 0

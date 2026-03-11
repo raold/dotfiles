@@ -1,0 +1,4 @@
+# Override CachyOS vendor rule — set swappiness=100 instead of 150
+# 150 caused compositor thrashing during GPU compute on 64GB system
+ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", SYSCTL{vm.swappiness}="100", \
+    RUN+="/bin/sh -c 'echo N > /sys/module/zswap/parameters/enabled'"

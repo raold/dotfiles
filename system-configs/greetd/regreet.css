@@ -1,0 +1,47 @@
+/* Gruvbox Material Dark — matches wm-common/colors.conf */
+window {
+    background-color: #32302f;   /* $bg_soft */
+}
+
+entry {
+    background-color: #282828;   /* $bg */
+    color: #d4be98;              /* $fg */
+    border: 2px solid #504945;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+entry:focus {
+    border-color: #e78a4e;       /* $orange */
+    box-shadow: 0 0 4px rgba(231, 138, 78, 0.3);
+}
+
+button {
+    background-color: #504945;
+    color: #d4be98;              /* $fg */
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+button:hover {
+    background-color: #665c54;
+}
+
+button:checked, button:active {
+    background-color: #e78a4e;   /* $orange */
+    color: #282828;              /* $bg */
+}
+
+label {
+    color: #d4be98;              /* $fg */
+}
+
+combobox button {
+    background-color: #282828;
+    border: 2px solid #504945;
+}
+
+combobox button:hover {
+    border-color: #928374;       /* $gray */
+}
