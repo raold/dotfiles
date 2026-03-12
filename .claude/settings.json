@@ -81,12 +81,6 @@
     "claude-code-setup@claude-plugins-official": true,
     "coderabbit@claude-plugins-official": true
   },
-  "sandbox": {
-    "enabled": false
-  },
-  "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high",
   "extraKnownMarketplaces": {
     "knowledge-work-plugins": {
       "source": {
@@ -94,5 +88,11 @@
         "repo": "anthropics/knowledge-work-plugins"
       }
     }
-  }
+  },
+  "sandbox": {
+    "enabled": false
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true
 }
