@@ -1,6 +1,5 @@
-# Sway config - Wayland i3-compatible compositor
-# Shares configuration with i3 via wm-common/
-# See: https://swaywm.org
+# Sway config — Sibyl mini PC (Debian 13, AMD Ryzen 9 8945HS)
+# Adapted from github.com/raold/dotfiles
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SHARED CONFIGURATION (synced with i3)
@@ -12,6 +11,14 @@ include ~/.config/wm-common/keybindings.conf
 include ~/.config/wm-common/workspaces.conf
 include ~/.config/wm-common/modes.conf
 include ~/.config/wm-common/window-rules.conf
+
+# ─────────────────────────────────────────────────
+# Gaps
+# ─────────────────────────────────────────────────
+gaps inner 25
+gaps outer 25
+gaps top 5
+gaps bottom 5
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # WAYLAND-SPECIFIC SETTINGS (Sway only)
@@ -28,17 +35,10 @@ set $clipboard_cmd cliphist list | rofi -dmenu | cliphist decode | wl-copy
 set $exit_cmd swaymsg exit
 
 # ─────────────────────────────────────────────────
-# Output Configuration (replaces xrandr)
+# Output Configuration
 # ─────────────────────────────────────────────────
-output eDP-1 {
-    mode 2256x1504@60Hz
-    scale 1.25
-    # Adaptive sync (VRR) - disable for battery
-    adaptive_sync off
-}
-
-# Wallpaper (replaces feh)
-output * bg ~/Pictures/Gruvbox-Archlinux2/Light/3840x2160-light-archlinux2.png fill
+# Desktop — auto-detect connected output, no scaling
+output * bg ~/Pictures/gruvbox-wallpaper-1.jpg fill
 
 # ─────────────────────────────────────────────────
 # Input Configuration
@@ -49,18 +49,25 @@ input type:keyboard {
     repeat_rate 50
 }
 
-input type:touchpad {
-    tap enabled
-    natural_scroll enabled
-    dwt enabled
-    accel_profile adaptive
-    pointer_accel 0.3
-}
+# No touchpad block — desktop machine
+
+# ─────────────────────────────────────────────────
+# DBus/Portal Environment (must run before GUI apps)
+# ─────────────────────────────────────────────────
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP=sway
 
 # ─────────────────────────────────────────────────
 # System Tray Applets
 # ─────────────────────────────────────────────────
 exec nm-applet --indicator
+
+# ─────────────────────────────────────────────────
+# Smart Split (auto splith/splitv based on dimensions)
+# ─────────────────────────────────────────────────
+exec autotiling
+
+# Inactive window transparency
+exec_always pkill -f sway-fader.py; exec ~/.config/sway/sway-fader.py
 
 # ─────────────────────────────────────────────────
 # Bar (waybar)
@@ -70,9 +77,9 @@ bar {
 }
 
 # ─────────────────────────────────────────────────
-# Notifications (dunst works on Wayland too)
+# Notifications (swaync — Wayland-native)
 # ─────────────────────────────────────────────────
-exec dunst
+exec swaync
 
 # ─────────────────────────────────────────────────
 # Clipboard Manager (cliphist - Wayland)
@@ -80,13 +87,11 @@ exec dunst
 exec wl-paste --watch cliphist store
 
 # ─────────────────────────────────────────────────
-# Idle Configuration (replaces xss-lock)
+# Idle Configuration — DPMS only, no auto-lock
 # ─────────────────────────────────────────────────
 exec swayidle -w \
-    timeout 300 'swaylock -f' \
-    timeout 600 'swaymsg "output * power off"' \
-    resume 'swaymsg "output * power on"' \
-    before-sleep 'swaylock -f'
+    timeout 2700 'swaymsg "output * power off"' \
+    resume 'swaymsg "output * power on"'
 
 # ─────────────────────────────────────────────────
 # Scratchpad Terminals (Wayland - use app_id)
@@ -98,7 +103,7 @@ for_window [app_id="ranger-scratch"] floating enable, resize set 1200 700, move 
 exec kitty --class ranger-scratch -e ranger
 
 # ─────────────────────────────────────────────────
-# XWayland (for legacy X11 apps)
+# XWayland (for legacy X11 apps like rofi)
 # ─────────────────────────────────────────────────
 xwayland enable
 
@@ -107,8 +112,8 @@ xwayland enable
 # ─────────────────────────────────────────────────
 set $gnome-schema org.gnome.desktop.interface
 exec_always {
-    gsettings set $gnome-schema gtk-theme 'Gruvbox-Material-Dark'
-    gsettings set $gnome-schema icon-theme 'Gruvbox-Material-Dark'
+    gsettings set $gnome-schema gtk-theme 'Adwaita-dark'
+    gsettings set $gnome-schema icon-theme 'Adwaita'
     gsettings set $gnome-schema cursor-theme 'Bibata-Modern-Classic'
     gsettings set $gnome-schema font-name 'Sans 10'
 }
