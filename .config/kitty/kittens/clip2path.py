@@ -18,32 +18,33 @@ def handle_result(args, answer, target_window_id, boss):
     if window is None:
         return
 
-    # Check if clipboard contains an image
+    # Check if clipboard contains an image (Wayland-native)
     try:
         result = subprocess.run(
-            ['xclip', '-selection', 'clipboard', '-t', 'TARGETS', '-o'],
+            ['wl-paste', '--list-types'],
             capture_output=True,
             text=True
         )
-        targets = result.stdout
+        types = result.stdout
 
-        if 'image/png' in targets:
+        if 'image/png' in types:
             # Save image to temp file
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filepath = f'/tmp/clipboard_{timestamp}.png'
 
-            subprocess.run(
-                ['xclip', '-selection', 'clipboard', '-t', 'image/png', '-o'],
-                stdout=open(filepath, 'wb'),
-                check=True
-            )
+            with open(filepath, 'wb') as f:
+                subprocess.run(
+                    ['wl-paste', '--type', 'image/png'],
+                    stdout=f,
+                    check=True
+                )
 
             # Paste the file path
             window.paste_text(filepath)
         else:
             # No image - paste text normally
             result = subprocess.run(
-                ['xclip', '-selection', 'clipboard', '-o'],
+                ['wl-paste', '--no-newline'],
                 capture_output=True,
                 text=True
             )
