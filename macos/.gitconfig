@@ -1,0 +1,35 @@
+[credential]
+	helper = osxkeychain
+[user]
+	name = raold
+	email = oldham@hey.com
+	signingkey = key::ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP+LHcwdOhIqMVt9PgIxvgArUCt3bIfn72vRn95S0vuUR3Sqb6c6ooUKzZfkpVPURFK2PIb6vLPl6jegQQe5CMI= git-signing@secretive.Rich's-MBA.local
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[core]
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	features = catppuccin-macchiato
+	side-by-side = true
+	line-numbers = true
+[merge]
+	conflictstyle = diff3
+[diff]
+	colorMoved = default
+[include]
+	path = ~/.config/catppuccin-delta.gitconfig
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
+[gpg]
+	program = /opt/homebrew/bin/gpg
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = /Users/dro/.config/git/allowed_signers

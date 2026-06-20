@@ -27,3 +27,11 @@ project.yml
 
 # macOS
 .DS_Store
+
+# --- secret-exclusions (macOS tracking) — never commit ---
+**/settings.local.json
+**/secrets.zsh
+**/secrets.zsh.age
+*key.txt
+.age/
+macos/.claude/settings.json
