@@ -8,6 +8,7 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOME_DIR="$HOME"
 CONFIG_DIR="$HOME/.config"
+OS="$(uname -s)"  # Darwin or Linux — used for per-OS configs (e.g. ghostty)
 
 # Colors
 RED='\033[0;31m'
@@ -61,7 +62,8 @@ CONFIG_DIRS=(
     "spicetify"
     # Added 2026-01-10
     "arch-update"
-    "ghostty"
+    # NOTE: "ghostty" is handled per-OS below (config.macos / config.linux),
+    # not synced as a whole directory — see the ghostty blocks in collect/install.
     "htop"
     "spotifyd"
     "flameshot"
@@ -206,6 +208,21 @@ collect_dotfiles() {
             echo -e "${RED}  Not found: .config/$file${NC}"
         fi
     done
+
+    # Ghostty: collect the live config into the per-OS file (macOS and Linux
+    # keep separate configs; the shared dir-sync above intentionally skips it).
+    if [[ -f "$CONFIG_DIR/ghostty/config" ]]; then
+        mkdir -p "$DOTFILES_DIR/.config/ghostty"
+        if [[ "$OS" == "Darwin" ]]; then
+            cp "$CONFIG_DIR/ghostty/config" "$DOTFILES_DIR/.config/ghostty/config.macos"
+            echo -e "${GREEN}  Collected: .config/ghostty/config.macos${NC}"
+        else
+            cp "$CONFIG_DIR/ghostty/config" "$DOTFILES_DIR/.config/ghostty/config.linux"
+            echo -e "${GREEN}  Collected: .config/ghostty/config.linux${NC}"
+        fi
+    else
+        echo -e "${RED}  Not found: .config/ghostty/config${NC}"
+    fi
 
     # Claude Code settings - SKIPPED (now symlinked to repo)
     # for file in "${CLAUDE_FILES[@]}"; do
@@ -400,6 +417,21 @@ install_dotfiles() {
         fi
     done
 
+    # Ghostty: install the per-OS config as ~/.config/ghostty/config
+    if [[ "$OS" == "Darwin" ]]; then
+        GHOSTTY_SRC="$DOTFILES_DIR/.config/ghostty/config.macos"
+    else
+        GHOSTTY_SRC="$DOTFILES_DIR/.config/ghostty/config.linux"
+    fi
+    if [[ -f "$GHOSTTY_SRC" ]]; then
+        mkdir -p "$CONFIG_DIR/ghostty"
+        if [[ -f "$CONFIG_DIR/ghostty/config" ]]; then
+            cp "$CONFIG_DIR/ghostty/config" "$BACKUP_DIR/ghostty-config.bak"
+        fi
+        cp "$GHOSTTY_SRC" "$CONFIG_DIR/ghostty/config"
+        echo -e "${GREEN}  Installed: .config/ghostty/config (from $(basename "$GHOSTTY_SRC"))${NC}"
+    fi
+
     # Install user scripts from .local/bin
     mkdir -p "$HOME/.local/bin"
     for script in "${LOCAL_BIN_SCRIPTS[@]}"; do
@@ -553,6 +585,9 @@ show_help() {
     echo "Symlinked files (auto-synced, no collect needed):"
     echo "  - ~/CLAUDE.md → dotfiles-repo/CLAUDE.md"
     echo "  - ~/.claude/settings.json → dotfiles-repo/.claude/settings.json"
+    echo ""
+    echo "Per-OS configs (auto-selected by uname):"
+    echo "  - ghostty: .config/ghostty/config.macos (macOS) / config.linux (Linux)"
     echo ""
     echo "For WM-specific sync, use: ./sync-wm.sh --help"
 }
