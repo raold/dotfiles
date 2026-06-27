@@ -26,6 +26,11 @@ FILES=(
   ".claude/CLAUDE.md"
   ".config/starship.toml"
   ".config/catppuccin_macchiato-zsh-syntax-highlighting.zsh"
+  ".config/ghostty/config"
+  ".config/ghostty/shaders/cursor_blaze.glsl"
+  ".config/fastfetch/config.jsonc"
+  ".config/fastfetch/apple-catppuccin.png"
+  ".config/ripgrep/config"
 )
 
 ts="$(date +%Y%m%d-%H%M%S)"

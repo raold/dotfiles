@@ -1,0 +1,18 @@
+# ripgrep config — sourced via RIPGREP_CONFIG_PATH (set in ~/.zshrc).
+# Catppuccin Mocha match colors to match the fzf / eza / bat palette.
+# Color values are R,G,B triples (truecolor).
+
+# match = Mocha red (#f38ba8), bold
+--colors=match:fg:243,139,168
+--colors=match:style:bold
+# file paths = Mocha blue (#89b4fa)
+--colors=path:fg:137,180,250
+# line numbers = Mocha yellow (#f9e2af)
+--colors=line:fg:249,226,175
+# column numbers = Mocha mauve (#cba6f7)
+--colors=column:fg:203,166,247
+
+# --- behavior (commented: uncomment if you want it) ---
+# smart-case: case-insensitive unless the pattern has an uppercase letter.
+# This is a BEHAVIOR change from rg's case-sensitive default — opt in here.
+# --smart-case

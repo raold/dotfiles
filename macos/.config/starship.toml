@@ -2,7 +2,7 @@
 
 format = """
 [](color_orange)\
-$os\
+[󰀵](bg:color_orange fg:color_fg_dark)\
 $username\
 [](bg:color_yellow fg:color_orange)\
 $directory\
@@ -10,26 +10,59 @@ $directory\
 $git_branch\
 $git_status\
 [](fg:color_aqua bg:color_blue)\
-$c\
-$cpp\
+$python\
+$nodejs\
 $rust\
 $golang\
-$nodejs\
-$php\
+$c\
+$cpp\
 $java\
 $kotlin\
 $haskell\
-$python\
+$php\
+$ruby\
+$lua\
+$zig\
+$deno\
+$bun\
 [](fg:color_blue bg:color_bg3)\
 $docker_context\
 $conda\
 $pixi\
 [](fg:color_bg3 bg:color_bg1)\
+$cmd_duration\
+$jobs\
 $time\
 [ ](fg:color_bg1)\
 $line_break$character"""
 
 palette = 'catppuccin_mocha'
+
+[palettes.neon_tokyo]
+color_fg0     = '#c0caf5'
+color_fg_dark = '#1a1b26'
+color_bg1     = '#16161e'
+color_bg3     = '#292e42'
+color_blue    = '#7aa2f7'
+color_aqua    = '#2ac3de'
+color_green   = '#9ece6a'
+color_orange  = '#ff9e64'
+color_purple  = '#bb9af7'
+color_red     = '#f7768e'
+color_yellow  = '#e0af68'
+
+[palettes.neon_synthwave]
+color_fg0     = '#f1f5ff'
+color_fg_dark = '#0d0717'
+color_bg1     = '#150d24'
+color_bg3     = '#241734'
+color_blue    = '#9d72ff'
+color_aqua    = '#08f7fe'
+color_green   = '#21f6a3'
+color_orange  = '#fe53bb'
+color_purple  = '#c084fc'
+color_red     = '#ff3caa'
+color_yellow  = '#f5d300'
 
 [palettes.gruvbox_dark]
 color_fg0 = '#fbf1c7'
@@ -131,9 +164,15 @@ format = '[ $user ]($style)'
 
 [directory]
 style = "fg:color_fg_dark bg:color_yellow"
-format = "[ $path ]($style)"
+format = "[ $path ]($style)[$read_only]($read_only_style)"
 truncation_length = 3
 truncation_symbol = "…/"
+truncate_to_repo = true
+read_only = " 󰌾"
+read_only_style = "fg:color_red bg:color_yellow"
+before_repo_root_style = "fg:color_fg_dark bg:color_yellow"
+repo_root_style = "bold fg:color_fg_dark bg:color_yellow"
+repo_root_format = "[ $before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path ]($style)[$read_only]($read_only_style)"
 
 [directory.substitutions]
 "Documents" = "󰈙 "
@@ -150,6 +189,17 @@ format = '[[ $symbol $branch ](fg:color_fg_dark bg:color_aqua)]($style)'
 [git_status]
 style = "bg:color_aqua"
 format = '[[($all_status$ahead_behind )](fg:color_fg_dark bg:color_aqua)]($style)'
+conflicted = '=${count} '
+ahead = '⇡${count} '
+behind = '⇣${count} '
+diverged = '⇕⇡${ahead_count}⇣${behind_count} '
+up_to_date = ''
+untracked = '?${count} '
+stashed = '≡${count} '
+modified = '!${count} '
+staged = '+${count} '
+renamed = '»${count} '
+deleted = '✘${count} '
 
 [nodejs]
 symbol = ""
@@ -199,7 +249,9 @@ format = '[[ $symbol( $version) ](fg:color_fg_dark bg:color_blue)]($style)'
 [python]
 symbol = ""
 style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg_dark bg:color_blue)]($style)'
+format = '[[ $symbol( $version)( $virtualenv) ](fg:color_fg_dark bg:color_blue)]($style)'
+detect_folders = ['.venv']
+python_binary = ['python3', 'python']
 
 [docker_context]
 symbol = ""
@@ -214,6 +266,18 @@ format = '[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)'
 style = "bg:color_bg3"
 format = '[[ $symbol( $version)( $environment) ](fg:color_fg0 bg:color_bg3)]($style)'
 
+[cmd_duration]
+min_time = 500
+show_milliseconds = false
+style = "fg:color_fg0 bg:color_bg1"
+format = '[ 󰔚 $duration ]($style)'
+
+[jobs]
+symbol = "󰜎 "
+number_threshold = 1
+style = "fg:color_fg0 bg:color_bg1"
+format = '[ $symbol$number ]($style)'
+
 [time]
 disabled = false
 time_format = "%R"
@@ -225,9 +289,9 @@ disabled = false
 
 [character]
 disabled = false
-success_symbol = '[](bold fg:color_green)'
-error_symbol = '[](bold fg:color_red)'
-vimcmd_symbol = '[](bold fg:color_green)'
+success_symbol = '[❯](bold fg:color_green)'
+error_symbol = '[❯](bold fg:color_red)'
+vimcmd_symbol = '[❮](bold fg:color_green)'
 vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
 vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'

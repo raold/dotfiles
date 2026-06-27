@@ -37,7 +37,7 @@ echo "=== Installing Modern CLI Tools ==="
 # fzf - Fuzzy finder
 # watch - Run command periodically
 # tldr - Simplified man pages
-brew install tree htop jq ripgrep fd bat eza fzf watch tldr || true
+brew install tree htop jq ripgrep fd bat eza fzf watch tldr fastfetch vivid zoxide atuin || true
 
 echo ""
 echo "=== Installing Development Tools ==="

@@ -18,7 +18,12 @@ macOS-specific is here under `macos/`.
 | `.gitconfig` | `~/.gitconfig` | git identity + Secretive SSH commit signing |
 | `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | global Claude Code instructions |
 | `.config/starship.toml` | `~/.config/starship.toml` | Starship prompt |
-| `.config/catppuccin_macchiato-zsh-syntax-highlighting.zsh` | `~/.config/…` | Catppuccin theme for zsh-syntax-highlighting |
+| `.config/catppuccin_macchiato-zsh-syntax-highlighting.zsh` | `~/.config/…` | Catppuccin theme for zsh-syntax-highlighting (legacy; `.zshrc` now uses fast-syntax-highlighting) |
+| `.config/ghostty/config` | `~/.config/ghostty/config` | Ghostty — Catppuccin Mocha "dark showpiece": transparency + liquid-glass blur + display-p3 + cursor-blaze shader |
+| `.config/ghostty/shaders/cursor_blaze.glsl` | `~/.config/ghostty/shaders/…` | animated cursor-trail shader, recolored to Mocha mauve/pink |
+| `.config/fastfetch/config.jsonc` | `~/.config/fastfetch/config.jsonc` | fastfetch greeter — Catppuccin pastel Apple logo via the kitty-direct graphics protocol |
+| `.config/fastfetch/apple-catppuccin.png` | `~/.config/fastfetch/…` | the pastel Apple logo image (referenced by the fastfetch config) |
+| `.config/ripgrep/config` | `~/.config/ripgrep/config` | ripgrep — Catppuccin Mocha match colors |
 | `setup_mac_dev_tools.sh` | run once | brew install of GNU utils + modern CLI + dev tools |
 
 ## Restore on a fresh Mac
@@ -32,7 +37,10 @@ git clone https://github.com/raold/dotfiles.git && cd dotfiles
 # 2. dev tools + shell deps
 sh macos/setup_mac_dev_tools.sh
 brew install starship age age-plugin-se pyenv \
-  zsh-autosuggestions zsh-syntax-highlighting zsh-autocomplete
+  zsh-autosuggestions zsh-fast-syntax-highlighting fzf-tab \
+  fastfetch vivid zoxide atuin
+# fast-syntax-highlighting theme (persists in ~/.config/fsh/):
+fast-theme XDG:catppuccin-mocha
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # 3. drop the dotfiles into place — DRY-RUN FIRST

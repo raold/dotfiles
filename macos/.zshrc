@@ -2,6 +2,19 @@
 # across this file, ~/.zprofile, and tool installers (pyenv, pipx, LM Studio…).
 typeset -U path PATH
 
+# ── tiny eval-cache: memoize a slow `<tool> init` to a file and re-source it,
+#    regenerating only when the tool binary is newer than the cache. Saves one
+#    subprocess per shell start (pyenv ~30ms, starship ~3ms). Added 2026-06-26.
+_cache_eval() {
+  local key="${(j:_:)@//[^A-Za-z0-9]/_}"
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/${key}.zsh"
+  local bin=${commands[$1]}
+  if [[ ! -s $cache || ( -n $bin && $bin -nt $cache ) ]]; then
+    mkdir -p ${cache:h}; "$@" >| $cache 2>/dev/null
+  fi
+  source $cache
+}
+
 # Python aliases
 alias python='python3'      # Map python to python3
 alias pip='python -m pip'   # Always use pip for the active Python
@@ -17,7 +30,7 @@ alias pip='python -m pip'   # Always use pip for the active Python
 
 # pyenv — interactive shell init (shell function, completions, shims, rehash).
 # The login-shell PATH half (`pyenv init --path`) now lives in ~/.zprofile.
-eval "$(pyenv init - zsh)"
+_cache_eval pyenv init - zsh
 
 export PATH="$HOME/.local/bin:$PATH"    # pipx shim directory
 
@@ -76,7 +89,11 @@ _auto_venv   # run once for the shell's starting directory
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
-source $HOMEBREW_PREFIX/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+# DISABLED 2026-06-26 — replaced by fzf-tab (Tab → fzf picker with previews),
+# which conflicts with zsh-autocomplete (both hijack Tab). To switch back:
+# uncomment this line AND remove the fzf-tab block further down (and ideally the
+# transient-prompt block at the very end, which zsh-autocomplete clashes with).
+# source $HOMEBREW_PREFIX/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 # NOTE: zsh-autosuggestions and zsh-syntax-highlighting are sourced at the END of
 # this file — they must load after oh-my-zsh, Starship, and every alias/function/
 # widget defined below, or they won't wrap them correctly (per their READMEs).
@@ -155,14 +172,22 @@ plugins=(git
   dotenv
   iterm2
   npm
-  z
 )
 
 # Docker CLI completions — added to fpath BEFORE oh-my-zsh runs compinit, so the
 # single compinit below picks them up (avoids a second, redundant compinit later).
 fpath=($HOME/.docker/completions $fpath)
 
+# Speed: skip the compaudit fpath security scan (safe on a single-user Mac) and
+# keep the completion dump in ~/.cache (one file, not scattered across $HOME).
+export ZSH_DISABLE_COMPFIX=true
+export ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${HOST}-${ZSH_VERSION}"
 source $ZSH/oh-my-zsh.sh
+
+# Bigger, de-duped history (atuin owns Ctrl-R; this still feeds autosuggestions).
+HISTSIZE=200000
+SAVEHIST=200000
+setopt hist_reduce_blanks hist_save_no_dups hist_find_no_dups inc_append_history
 
 # User configuration
 
@@ -193,18 +218,68 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-eval "$(starship init zsh)"
+_cache_eval starship init zsh
 
-# Catppuccin Macchiato — fzf colors
-export FZF_DEFAULT_OPTS=" \
---color=bg+:#363A4F,bg:#24273A,spinner:#F4DBD6,hl:#ED8796 \
---color=fg:#CAD3F5,header:#ED8796,info:#C6A0F6,pointer:#F4DBD6 \
---color=marker:#B7BDF8,fg+:#CAD3F5,prompt:#C6A0F6,hl+:#ED8796 \
---color=selected-bg:#494D64 \
---color=border:#6E738D,label:#CAD3F5"
+# Catppuccin Mocha — fzf colors + layout (matches the dark Ghostty theme)
+export FZF_DEFAULT_OPTS="
+  --layout=reverse --border=rounded --height=60% --margin=1 --padding=1
+  --info=inline-right --prompt='  ' --pointer='▶' --marker='✓'
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
+  --color=selected-bg:#45475a,border:#6c7086,label:#cdd6f4
+  --bind='ctrl-/:toggle-preview'"
+# Previews only on the file/dir pickers (keeps Ctrl-R and other pickers clean):
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}' --preview-window='right:60%:border-left'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons {}' --preview-window='right:60%:border-left'"
+# Activate fzf's zsh keybindings: Ctrl-T (files), Alt-C (cd). It also binds
+# Ctrl-R, but atuin below is sourced last and reclaims Ctrl-R.
+_cache_eval fzf --zsh
 
-# Catppuccin Macchiato — eza theme
+# ── completion styling + fzf-tab (Tab → fzf picker with previews) ───────────
+# Replaces zsh-autocomplete's live menu. Tab now opens an fzf chooser with
+# eza/bat previews and inherits the Catppuccin Mocha FZF_DEFAULT_OPTS.
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+# Catppuccin Mocha LS_COLORS via vivid (truecolor) — themes `ls`, the eza
+# fallback, and the fzf-tab/completion menu (consumed by list-colors below).
+# Falls back to gdircolors' generic ANSI palette if vivid isn't installed.
+if command -v vivid >/dev/null; then
+  export LS_COLORS="$(vivid generate catppuccin-mocha)"
+elif command -v gdircolors >/dev/null; then
+  eval "$(gdircolors -b)"
+fi
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no                          # required: let fzf-tab own the menu
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '[%d]'       # group headers fzf-tab can switch on
+zstyle ':fzf-tab:*' use-fzf-default-opts yes            # inherit your Mocha fzf colors
+zstyle ':fzf-tab:*' switch-group '<' '>'
+zstyle ':fzf-tab:*' fzf-flags --height=60% --border=rounded
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons=always $realpath'
+zstyle ':fzf-tab:complete:*:*' fzf-preview \
+  '[[ -d $realpath ]] && eza -1 --color=always --icons=always $realpath || bat -n --color=always --line-range :200 $realpath 2>/dev/null || cat $realpath 2>/dev/null'
+source $HOMEBREW_PREFIX/share/fzf-tab/fzf-tab.zsh
+
+# Catppuccin Mocha — eza theme + aliases (eza wasn't aliased to ls before)
 export EZA_CONFIG_DIR="$HOME/.config/eza"
+alias ls='eza --icons --group-directories-first'
+alias ll='eza -lh --icons --git --group-directories-first'
+alias la='eza -lah --icons --git --group-directories-first'
+alias lt='eza --tree --level=2 --icons --group-directories-first'
+
+# ripgrep — Catppuccin Mocha match colors live in ~/.config/ripgrep/config
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+
+# zellij — persistent terminal sessions (survive a window close / restart).
+# `zj` attaches to (or creates) a session named "main". NOT auto-started — run
+# it when you want persistence; otherwise use Ghostty's native splits.
+alias zj='zellij attach --create main'
+
+# zoxide — smarter `cd` (z / zi). Replaces the oh-my-zsh `z` plugin (removed above).
+_cache_eval zoxide init zsh
+# atuin — fuzzy, full-text shell history on Ctrl-R (was installed but never wired).
+# --disable-up-arrow keeps ↑ on zsh / zsh-autocomplete history; atuin owns Ctrl-R.
+_cache_eval atuin init zsh --disable-up-arrow
 
 
 # (pipx appended a duplicate ~/.local/bin here; removed — line ~5 of this file
@@ -266,6 +341,10 @@ export QWEN_THINK="$LMS_MODELS/lmstudio-community/Qwen3-30B-A3B-Thinking-2507-ML
 
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+# iTerm2 utilities (imgcat, it2dl, it2check, …) live here as executable scripts;
+# adding the dir to PATH makes them work in scripts/non-interactive shells, not just
+# via the interactive aliases. `typeset -U path` (top of file) keeps PATH de-duped.
+[ -d "${HOME}/.iterm2" ] && export PATH="${HOME}/.iterm2:$PATH"
 
 # Docker CLI completions are now wired into fpath ABOVE (before oh-my-zsh's
 # compinit), so Docker Desktop's separate autoload/compinit has been removed
@@ -365,7 +444,7 @@ sibyl() {
 # (OPENCLAW_GATEWAY_TOKEN now lives in ~/.config/zsh/secrets.zsh.)
 
 # YubiKey / GnuPG agent for SSH
-export GPG_TTY="$(tty)"
+export GPG_TTY="${TTY:-$(tty)}"
 unset SSH_AGENT_PID
 # 2026-05-21: prefer Secretive's SSH agent (Touch ID via Secure Enclave)
 # when its socket is present. Falls back to gpg-agent (Yubikey-as-SSH-key
@@ -489,7 +568,51 @@ pdecrypt() {
 # ───────────────────────── interactive UX plugins (sourced LAST) ─────────────────────────
 # These must load after oh-my-zsh, Starship, and every alias/function/widget
 # defined above, per their upstream READMEs. (zsh-autocomplete stays near the top.)
+# zsh-autosuggestions (gray ghost-text from history) — KEPT; perf + dark-bg tweaks.
+ZSH_AUTOSUGGEST_USE_ASYNC=1
+# (ZSH_AUTOSUGGEST_MANUAL_REBIND removed 2026-06-26 — it broke bracketed paste,
+#  i.e. drag-drop / paste of file paths into the terminal.)
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6c7086'   # Mocha overlay0 — dim but legible
 source $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-# Catppuccin theme defines ZSH_HIGHLIGHT_STYLES and MUST precede the highlighter.
-source ~/.config/catppuccin_macchiato-zsh-syntax-highlighting.zsh
-source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# fast-syntax-highlighting (replaces zsh-syntax-highlighting) — faster + more
+# accurate. MUST be sourced last among ZLE plugins. Themed Catppuccin Mocha via
+# `fast-theme XDG:catppuccin-mocha` (persists in ~/.config/fsh/). The old
+# macchiato zsh-syntax-highlighting theme is retired.
+source $HOMEBREW_PREFIX/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+
+# ── fastfetch greeter — runs once, ONLY in a real top-level human terminal ──
+# Guards: interactive shell? not an agent/CI? not an IDE terminal? top-level
+# (not nested/tmux)? stdout a real TTY? Otherwise stay silent (so it never
+# spews into the Claude Code Bash tool, scripts, pipes, or subshells).
+_ff_greet() {
+  case $- in *i*) : ;; *) return ;; esac
+  [[ -n $CLAUDECODE || -n $CLAUDE_CODE_ENTRYPOINT || -n $AI_AGENT || -n $CI ]] && return
+  [[ $TERM_PROGRAM == vscode || -n $VSCODE_INJECTION || -n $NVIM || -n $INSIDE_EMACS ]] && return
+  (( ${SHLVL:-1} > 1 )) && return
+  [[ -t 1 ]] || return
+  command -v fastfetch >/dev/null 2>&1 && fastfetch
+}
+_ff_greet
+unfunction _ff_greet
+
+# ── Starship transient prompt for zsh — ENABLED 2026-06-26 ──────────────────
+# Collapses each finished prompt to a tiny green ❯, keeping long scrollback
+# clean. Safe now that zsh-autocomplete is gone (it was the main conflictor).
+# If Enter ever stops accepting commands, comment out this whole block — open a
+# FRESH shell to test; your current shell keeps working until you do.
+zle-line-init() {
+  emulate -L zsh
+  [[ $CONTEXT == start ]] || return 0
+  while true; do
+    zle .recursive-edit; local -i ret=$?
+    [[ $ret == 0 && $KEYS == $'\4' ]] || break
+    [[ -o ignore_eof ]] || exit 0
+  done
+  local save=$PROMPT; PROMPT='%F{#a6e3a1}❯%f '
+  zle .reset-prompt; PROMPT=$save
+  if (( ret )); then zle .send-break; else zle .accept-line; fi
+  return ret
+}
+zle -N zle-line-init

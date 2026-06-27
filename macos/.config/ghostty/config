@@ -1,0 +1,103 @@
+# Ghostty config — ~/.config/ghostty/config
+# DARK "dramatic showpiece" — Catppuccin Mocha + transparency/blur + cursor shader.
+# Migrated from Gruvbox Light on 2026-06-26. Backup: ~/.rice-backup-20260626/
+# Reload after edits: Cmd+Shift+,  ·  Validate: ghostty +validate-config
+# NOTE: Ghostty has NO inline comments — every '#' must start its own line.
+
+# ── Theme — Catppuccin Mocha ────────────────────────────────────────────
+# Built-in (ghostty +list-themes). Coheres with the rest of the stack, which
+# is already Catppuccin (Starship/bat/eza/fzf/zsh-syntax-highlighting).
+# Swap to a neon alt any time: theme = TokyoNight Night  (or Catppuccin Macchiato)
+theme = Catppuccin Mocha
+# Render Ghostty's own chrome (titlebar/menus) dark to match.
+window-theme = dark
+# Wide-gamut: renders the authored sRGB hexes into Display-P3 = richer neon
+# accents. Switch to `srgb` if you ever want palette-exact colors.
+window-colorspace = display-p3
+
+# ── Transparency + blur (the "dramatic" part — max drama) ────────────────
+# 0.82 is bold; raise toward 0.90 if transcripts feel washed out in bright rooms.
+background-opacity = 0.82
+# macOS 26 (Tahoe) liquid-glass blur — more dramatic than the plain radius blur.
+# Fallbacks if it ever errors: `background-blur = true` (radius ~20) or an integer.
+background-blur = macos-glass-regular
+# Keep glyph cells fully opaque so TEXT stays crisp over the translucent window
+# (critical for reading Claude Code diffs/logs). Leave false.
+background-opacity-cells = false
+
+# ── Legibility floor over transparency (long Claude Code transcripts) ────
+# linear-corrected keeps thin text from disappearing on a translucent dark bg;
+# a small minimum-contrast bump guarantees dim ANSI colors stay readable.
+alpha-blending = linear-corrected
+minimum-contrast = 1.05
+
+# ── Font ────────────────────────────────────────────────────────────────
+font-family = FiraCode Nerd Font Mono
+font-size = 14
+# bold text uses the bright ANSI palette (the modern spelling of bold-is-bright).
+bold-color = bright
+# Thicken glyphs slightly — light text reads crisper on the dark bg.
+font-thicken = true
+# FiraCode ligatures (calt) + Nerd Font glyphs are ON by default.
+# Optional stylistic sets (change letterforms): uncomment to taste.
+# ss01 = single-story a · ss03 = no-serif-ish · ss05 = letterlike '@'
+# font-feature = ss01
+# font-feature = ss05
+
+# ── Cursor ──────────────────────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = true
+cursor-opacity = 1
+# (cursor-invert-fg-bg does NOT exist in 1.3.1 — use cursor-text/cursor-color.)
+
+# ── Cursor shader — animated "blaze" trail (max drama) ───────────────────
+# GLSL fragment shader. anim=true animates the trail on the FOCUSED surface
+# only — enough for a block cursor (it isn't moving in unfocused splits / bg
+# windows, so `always` would burn GPU/battery at the refresh rate animating
+# nothing). Comment both lines out to kill it entirely (pure eye-candy).
+# Source: github.com/0xhckr/ghostty-shaders  ·  file: ~/.config/ghostty/shaders/
+custom-shader = shaders/cursor_blaze.glsl
+custom-shader-animation = true
+
+# ── Splits / window chrome ──────────────────────────────────────────────
+# (Default keymap already covers splits/tabs: super+d / super+shift+d split,
+#  super+[ / ] focus, super+ctrl+arrows resize, super+shift+enter zoom, etc.)
+split-divider-color = #89b4fa
+unfocused-split-opacity = 0.6
+unfocused-split-fill = #11111b
+macos-titlebar-style = transparent
+macos-window-shadow = true
+
+# ── Custom macOS app icon (Catppuccin mauve — a small ricing touch) ──────
+macos-icon = custom-style
+macos-icon-frame = chrome
+macos-icon-ghost-color = #cba6f7
+macos-icon-screen-color = #1e1e2e,#313244
+
+# ── Window / padding ────────────────────────────────────────────────────
+window-padding-x = 25
+window-padding-y = 25
+window-padding-balance = true
+# Extend the edge cell background (and its transparency) into the padding so
+# there's no hard rectangle inside the blurred window.
+window-padding-color = extend
+window-width = 80
+window-height = 25
+
+# ── Keys / behavior ──────────────────────────────────────────────────────
+# Left Option = Meta (Claude Code Option+Enter / Option+P); RIGHT Option stays
+# free for macOS glyph input (∫ # é …). Was `true` (both Options = Meta).
+macos-option-as-alt = left
+# Restore window layout/cwd after quit (not running processes).
+window-save-state = always
+mouse-hide-while-typing = true
+# ~100 MB scrollback per surface for long agent transcripts (note: per tab/split).
+scrollback-limit = 100000000
+
+# ── Quick terminal — global drop-down overlay ────────────────────────────
+# ctrl+` (NOT cmd+` — that's macOS "cycle app windows"). Needs Accessibility
+# permission for Ghostty the first time (System Settings → Privacy → Accessibility).
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-animation-duration = 0.15
+quick-terminal-autohide = true

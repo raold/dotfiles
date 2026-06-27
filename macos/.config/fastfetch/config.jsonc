@@ -1,0 +1,107 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    // Catppuccin-pastel Apple (user-recolored retro logo). "kitty-direct" hands the
+    // PNG straight to Ghostty's OWN kitty-graphics decoder — no ImageMagick needed.
+    // (Plain "kitty" decodes via ImageMagick, which this lean Homebrew build lacks,
+    //  so it silently fell back to the builtin ASCII logo.)
+    // Fallbacks: if this still shows ASCII, `brew install imagemagick` + type "kitty";
+    //  for SSH / non-graphics terminals, `brew install chafa` + type "chafa".
+    // Revert to the ASCII glyph any time with "type": "auto".
+    "type": "kitty-direct",
+    "source": "~/.config/fastfetch/apple-catppuccin.png",
+    "width": 26,
+    "preserveAspectRatio": true,
+    "padding": {
+      "top": 1,
+      "right": 3
+    }
+  },
+
+  "display": {
+    "separator": "  "
+  },
+
+  "modules": [
+    {
+      "type": "custom",
+      "format": "┌────────────── Hardware Information ──────────────┐",
+      "outputColor": "magenta"
+    },
+    "break",
+    {
+      "type": "host",
+      "key": "    󰌢 ",
+      "keyColor": "green"
+    },
+    {
+      "type": "cpu",
+      "key": "    󰍛 ",
+      "keyColor": "green"
+    },
+    {
+      "type": "gpu",
+      "key": "    󰢮 ",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "memory",
+      "key": "    󰑭 ",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "disk",
+      "format": "{size-used} / {size-total} ({size-percentage}) - {filesystem}",
+      "key": "    󰋊 ",
+      "keyColor": "yellow"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "├────────────── Software Information ──────────────┤",
+      "outputColor": "magenta"
+    },
+    "break",
+    {
+      "type": "os",
+      "key": "    󰀵 ",
+      "keyColor": "blue"
+    },
+    {
+      "type": "kernel",
+      "key": "    󰒓 ",
+      "keyColor": "blue"
+    },
+    {
+      "type": "wm",
+      "key": "    󰍹 ",
+      "keyColor": "magenta"
+    },
+    {
+      "type": "shell",
+      "key": "    󰆍 ",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "terminal",
+      "key": "    󰞷 ",
+      "keyColor": "cyan"
+    },
+    {
+      "type": "packages",
+      "key": "    󰏖 ",
+      "keyColor": "magenta"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "└──────────────────────────────────────────────────┘",
+      "outputColor": "magenta"
+    },
+    {
+      "type": "colors",
+      "symbol": "circle"
+    }
+  ]
+}
